@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "serve": "python -m http.server 8080 --bind 127.0.0.1",
-    "check": "node --check game.mjs && node --check riverraidVisiblePort.mjs && node --check riverraidRiver.mjs && node --check riverraidFrame.mjs && node --check riverraidStatus.mjs && node --check viewer.mjs && node --check playerJetSprite.mjs && node --check riverraid_verified_sprite_meta.mjs && node --check riverraid_port.js && node smoke-check.mjs",
+    "check": "node --check game.mjs && node --check riverraidVisiblePort.mjs && node --check riverraidRiver.mjs && node --check riverraidFrame.mjs && node --check riverraidStatus.mjs && node --check tiaSound.worklet.js && node --check viewer.mjs && node --check playerJetSprite.mjs && node --check riverraid_verified_sprite_meta.mjs && node --check riverraid_port.js && node smoke-check.mjs",
     "verify": "node tools/verify-blockgen.mjs 30000 && node tools/verify-kernel-pf.mjs 20000 9 7 && node tools/verify-kernel-objects.mjs 20000 9 7 && node tools/verify-collisions.mjs 6000 7 && node tools/verify-frame.mjs 6000 3 && node tools/verify-status.mjs 3000 3 5"
   }
 }

@@ -36,6 +36,31 @@ let resetHold = 0;
 let lastFrameTime = 0;
 let accumulatorMs = 0;
 
+// *** sound: the ROM's TIA audio registers, played by tiaSound.worklet.js ***
+const audioRegs = { c0: 0, f0: 0, v0: 0, c1: 0, f1: 0, v1: 0 };
+let audioCtx = null;
+let audioNode = null;
+let muted = false;
+
+async function startAudio() {
+  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
+  try {
+    audioCtx = new AudioContext();
+    await audioCtx.audioWorklet.addModule('./tiaSound.worklet.js');
+    audioNode = new AudioWorkletNode(audioCtx, 'tia-sound', { outputChannelCount: [2] });
+    audioNode.connect(audioCtx.destination);
+    sendAudio();
+  } catch (error) {
+    console.warn('TIA sound unavailable:', error);
+  }
+}
+
+function sendAudio() {
+  if (!audioNode) return;
+  const silent = muted || paused;
+  audioNode.port.postMessage(silent ? { ...audioRegs, v0: 0, v1: 0 } : audioRegs);
+}
+
 // 160x160 kernel image, scaled to the canvas
 const screen = document.createElement('canvas');
 screen.width = 160;
@@ -168,6 +193,12 @@ function stepGame() {
   readInputs();
   const wasOver = memory[Z.gameMode] === 0xff;
   display = runFrame(memory, io).display;
+  // registers the ROM did not write this frame keep their values
+  let changed = false;
+  for (const [key, value] of Object.entries(io.audio ?? {})) {
+    if (audioRegs[key] !== value) { audioRegs[key] = value; changed = true; }
+  }
+  if (changed) sendAudio();
   if (resetHold > 0) resetHold -= 1;
   if (screenState === SCREEN_PLAYING && !wasOver && memory[Z.gameMode] === 0xff) screenState = SCREEN_GAME_OVER;
 }
@@ -177,6 +208,7 @@ function pressReset() {
   screenState = SCREEN_PLAYING;
   paused = false;
   pauseButton.textContent = 'Pause';
+  sendAudio();
 }
 
 // *** drawing ***
@@ -281,6 +313,8 @@ function frame(timestamp) {
 }
 
 window.addEventListener('keydown', (event) => {
+  startAudio(); // browsers only allow audio after a user gesture
+  if (event.code === 'KeyM') { muted = !muted; sendAudio(); }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
   if ((event.code === 'Space' || event.code === 'Enter') && screenState !== SCREEN_PLAYING) {
     pressReset();
@@ -290,8 +324,16 @@ window.addEventListener('keydown', (event) => {
   if (event.code === 'KeyP' && screenState === SCREEN_PLAYING) {
     paused = !paused;
     pauseButton.textContent = paused ? 'Resume' : 'Pause';
+    sendAudio();
   }
   if (event.code === 'KeyR') pressReset();
+});
+
+// the game loop stops while the page is hidden, so the last tone must not hang
+document.addEventListener('visibilitychange', () => {
+  if (!audioCtx) return;
+  if (document.hidden) audioCtx.suspend();
+  else audioCtx.resume();
 });
 
 window.addEventListener('keyup', (event) => {
@@ -299,12 +341,15 @@ window.addEventListener('keyup', (event) => {
 });
 
 pauseButton.addEventListener('click', () => {
+  startAudio();
   if (screenState !== SCREEN_PLAYING) return;
   paused = !paused;
   pauseButton.textContent = paused ? 'Resume' : 'Pause';
+  sendAudio();
 });
 
 resetButton.addEventListener('click', () => {
+  startAudio();
   pressReset();
 });
 

@@ -20,9 +20,17 @@ const attach = (vcs) => {
     else if ((a & 0x1080) === 0 && (a & 0x0f) === 0x0d) io.inpt5 = vcs.inpt5;
   };
   const w = vcs.write.bind(vcs);
-  vcs.write = (addr, value, c) => { if ((addr & 0x1280) === 0 && (addr & 0x3f) === 0 && (value & 2)) vsyncSeen = true; w(addr, value, c); };
+  vcs.write = (addr, value, c) => {
+    if ((addr & 0x1280) === 0 && (addr & 0x3f) === 0 && (value & 2)) vsyncSeen = true;
+    if ((addr & 0x1280) === 0) { const name = AUDIO_REGS[addr & 0x3f]; if (name) audioWrites[name] = value; }
+    w(addr, value, c);
+  };
 };
 let attached = false;
+// TIA sound registers written by the frame logic, compared with the port's io.audio
+const AUDIO_REGS = { 0x15: 'c0', 0x16: 'c1', 0x17: 'f0', 0x18: 'f1', 0x19: 'v0', 0x1a: 'v1' };
+let audioWrites = {};
+let audioBad = 0;
 const onCpu = (cpu, vcs) => {
   if (!attached) { attach(vcs); attached = true; }
   if (cpu.pc !== 0xf027) return;
@@ -32,6 +40,9 @@ const onCpu = (cpu, vcs) => {
     runFrame(mem, io);
     checked += 1;
     const diffs = [];
+    for (const [k, v] of Object.entries(audioWrites)) if (io.audio[k] !== v) diffs.push(`audio ${k} js ${io.audio[k]?.toString(16)} rom ${v.toString(16)}`);
+    for (const k of Object.keys(io.audio)) if (!(k in audioWrites)) diffs.push(`audio ${k} written by js only`);
+    if (diffs.length) audioBad += 1;
     for (let a = 0x80; a <= 0xff; a += 1) if (!SCRATCH.has(a) && mem[a] !== zp[a]) diffs.push(`${names[a] ?? '$' + a.toString(16)} js ${mem[a].toString(16)} rom ${zp[a].toString(16)}`);
     if (diffs.length) { bad += 1; if (bad <= 6) console.log(`frame ${n}: ${diffs.slice(0, 8).join(', ')}`); }
     if (prev[0xc6] === 0 && zp[0xc6] !== 0) stats.deaths += 1;
@@ -42,12 +53,12 @@ const onCpu = (cpu, vcs) => {
     if ([0xcd, 0xcf, 0xd1, 0xd3, 0xd5].some((a) => prev[a] !== zp[a]) && zp[0xc6] !== 0xff) stats.hits += 1;
   }
   if (keepFuel) { vcs.ram[0xb7 & 0x7f] = 0xff; zp[0xb7] = 0xff; } // full fuel, applied where both sides see it
-  prev = zp; io = fresh(); vsyncSeen = false;
+  prev = zp; io = fresh(); vsyncSeen = false; audioWrites = {};
   if (process.env.DEBUG_FRAME && n + 1 === Number(process.env.DEBUG_FRAME)) {
     console.log('state before frame', n + 1, JSON.stringify({ gameMode: zp[0xc6], blockOffset: zp[0x8b], playerX: zp[0xb3], reflect0: zp[0xe0], missileX: zp[0xf5], missileY: zp[0xb2], shapePtr0: zp[0xba].toString(16), blk: [...zp.subarray(0x8e, 0x94)].map((b) => b.toString(16)) }));
     vcs.onCollisionRead = (reg, c) => console.log('  rom read', reg, 'line', Math.floor(c / 76) - 40, 'cyc', c % 76, 'x', vcs.cpu.x, 'val', vcs.collisions(reg, c).toString(16));
   } else if (process.env.DEBUG_FRAME) vcs.onCollisionRead = null;
 };
 for (const _ of longRun({ frames, seed, onCpu, collisions: true, keepFuel: false, autoRestart: true })) n += 1;
-console.log({ checked, bad, ...stats });
+console.log({ checked, bad, audioBad, ...stats });
 process.exit(bad ? 1 : 0);
