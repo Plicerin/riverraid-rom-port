@@ -15,6 +15,11 @@ const debugEl = document.getElementById('debug');
 
 const logicalWidth = canvas.width;
 const logicalHeight = canvas.height;
+// HUD band on top, then the 160-line kernel at Stella's pixel aspect:
+// 4 canvas px per color clock, 2 per scanline (Atari pixels are twice as wide as tall)
+const HUD_HEIGHT = 42;
+const PIXEL_W = logicalWidth / 160;
+const LINE_H = (logicalHeight - HUD_HEIGHT) / KERNEL_LINES;
 const SCREEN_TITLE = 'title';
 const SCREEN_PLAYING = 'playing';
 const SCREEN_GAME_OVER = 'game-over';
@@ -204,15 +209,15 @@ function drawKernel() {
   }
   screenCtx.putImageData(screenImage, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(screen, 0, 0, logicalWidth, logicalHeight);
+  ctx.drawImage(screen, 0, HUD_HEIGHT, 160 * PIXEL_W, KERNEL_LINES * LINE_H);
 }
 
 function drawCanvasHud() {
   const fuelPct = fuelPercent();
   const fuelBarWidth = Math.max(0, Math.min(102, Math.round((fuelPct / 100) * 102)));
   ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
-  ctx.fillRect(0, 0, logicalWidth, 42);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, logicalWidth, HUD_HEIGHT);
   drawBlockText(scoreText(), 14, 13, { scale: 3, color: '#ffd166' });
   drawBlockText(`LIVES ${livesCount()}`, 116, 13, { scale: 3, color: '#e8f0ff' });
   drawBlockText(`SEC ${memory[Z.level]}`, 238, 13, { scale: 3, color: '#e8f0ff' });
