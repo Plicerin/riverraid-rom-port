@@ -65,6 +65,7 @@ function drawBitmap(targetCtx, bitmap, centerX, centerY, color, options = {}) {
     const leftX = startX + copy * spacing;
     for (let row = 0; row < bitmap.length; row += 1) {
       const bits = bitmap[row];
+      if (options.rowColors?.[row]) targetCtx.fillStyle = options.rowColors[row];
       for (let col = 0; col < bits.length; col += 1) {
         if (bits[col] !== '1') continue;
         const pixelCol = reflect ? (bits.length - 1 - col) : col;
@@ -460,6 +461,7 @@ function drawWorld() {
       ...spriteScaleForSlot(slot),
       reflect: slot.state1?.refp1Label === 'reflected',
       copies: copiesForSlot(slot),
+      rowColors: sprite.rowColors?.map(visiblePort.ntscColorCss),
     };
     drawBitmap(ctx, sprite.bitmap, ox, centerY, shapeColor(slot.shapeId), spriteOptions);
   });
