@@ -1,7 +1,7 @@
 import { romReset, runFrame, Z, LOW } from './riverraidFrame.mjs';
-import { NTSC_PALETTE_RGB } from './riverraidVisiblePort.mjs';
-import { KERNEL_LINES } from './riverraidRiver.mjs';
-import { statusLinePixels } from './riverraidStatus.mjs';
+import { drawScreen, SCREEN_WIDTH, SCREEN_LINES } from './riverraidScreen.mjs';
+import { createTiaAudio } from './riverraidAudio.mjs';
+import { readGamepad, gamepadEdges } from './riverraidGamepad.mjs';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -16,9 +16,6 @@ const debugEl = document.getElementById('debug');
 
 const logicalWidth = canvas.width;
 const logicalHeight = canvas.height;
-// The 160-line kernel, one more playfield line, then the ROM's status display,
-// at Stella's pixel aspect: 4 canvas px per color clock, 2 per scanline.
-const SCREEN_LINES = KERNEL_LINES + 1 + 38;
 const SCREEN_TITLE = 'title';
 const SCREEN_PLAYING = 'playing';
 const SCREEN_GAME_OVER = 'game-over';
@@ -36,37 +33,18 @@ let resetHold = 0;
 let lastFrameTime = 0;
 let accumulatorMs = 0;
 
-// *** sound: the ROM's TIA audio registers, played by tiaSound.worklet.js ***
-const audioRegs = { c0: 0, f0: 0, v0: 0, c1: 0, f1: 0, v1: 0 };
-let audioCtx = null;
-let audioNode = null;
+// sound: the ROM's TIA audio registers, played by tiaSound.worklet.js
+const audio = createTiaAudio('./tiaSound.worklet.js');
 let muted = false;
+const startAudio = () => audio.start();
+const sendAudio = () => audio.setSilent(muted || paused);
 
-async function startAudio() {
-  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
-  try {
-    audioCtx = new AudioContext();
-    await audioCtx.audioWorklet.addModule('./tiaSound.worklet.js');
-    audioNode = new AudioWorkletNode(audioCtx, 'tia-sound', { outputChannelCount: [2] });
-    audioNode.connect(audioCtx.destination);
-    sendAudio();
-  } catch (error) {
-    console.warn('TIA sound unavailable:', error);
-  }
-}
-
-function sendAudio() {
-  if (!audioNode) return;
-  const silent = muted || paused;
-  audioNode.port.postMessage(silent ? { ...audioRegs, v0: 0, v1: 0 } : audioRegs);
-}
-
-// 160x160 kernel image, scaled to the canvas
+// the 160x199 Atari picture, scaled to the canvas at Stella's 2:1 pixel aspect
 const screen = document.createElement('canvas');
-screen.width = 160;
+screen.width = SCREEN_WIDTH;
 screen.height = SCREEN_LINES;
 const screenCtx = screen.getContext('2d');
-const screenImage = screenCtx.createImageData(160, SCREEN_LINES);
+const screenImage = screenCtx.createImageData(SCREEN_WIDTH, SCREEN_LINES);
 
 const BLOCK_GLYPHS = Object.freeze({
   '0': ['111','101','101','101','111'],
@@ -176,14 +154,16 @@ function gameModeLabel() {
 
 // *** frame stepping ***
 
+let pad = null;
+
 function readInputs() {
   let swcha = 0xff;
-  if (pressed.has('ArrowRight') || pressed.has('KeyD')) swcha &= ~0x80;
-  if (pressed.has('ArrowLeft') || pressed.has('KeyA')) swcha &= ~0x40;
-  if (pressed.has('ArrowDown') || pressed.has('KeyS')) swcha &= ~0x20;
-  if (pressed.has('ArrowUp') || pressed.has('KeyW')) swcha &= ~0x10;
+  if (pressed.has('ArrowRight') || pressed.has('KeyD') || pad?.right) swcha &= ~0x80;
+  if (pressed.has('ArrowLeft') || pressed.has('KeyA') || pad?.left) swcha &= ~0x40;
+  if (pressed.has('ArrowDown') || pressed.has('KeyS') || pad?.down) swcha &= ~0x20;
+  if (pressed.has('ArrowUp') || pressed.has('KeyW') || pad?.up) swcha &= ~0x10;
   io.swcha = screenState === SCREEN_PLAYING ? swcha : 0xff;
-  io.inpt4 = screenState === SCREEN_PLAYING && (pressed.has('Space') || pressed.has('KeyZ')) ? 0x00 : 0x80;
+  io.inpt4 = screenState === SCREEN_PLAYING && (pressed.has('Space') || pressed.has('KeyZ') || pad?.fire) ? 0x00 : 0x80;
   io.inpt5 = 0x80;
   io.swchb = resetHold > 0 ? 0x0a : 0x0b; // bit 0 low = RESET switch pressed
   io.swchbNext = undefined;
@@ -193,12 +173,7 @@ function stepGame() {
   readInputs();
   const wasOver = memory[Z.gameMode] === 0xff;
   display = runFrame(memory, io).display;
-  // registers the ROM did not write this frame keep their values
-  let changed = false;
-  for (const [key, value] of Object.entries(io.audio ?? {})) {
-    if (audioRegs[key] !== value) { audioRegs[key] = value; changed = true; }
-  }
-  if (changed) sendAudio();
+  audio.update(io.audio);
   if (resetHold > 0) resetHold -= 1;
   if (screenState === SCREEN_PLAYING && !wasOver && memory[Z.gameMode] === 0xff) screenState = SCREEN_GAME_OVER;
 }
@@ -215,35 +190,7 @@ function pressReset() {
 
 function drawKernel() {
   if (!display) return;
-  const { pf, objs, masks, ssXor, ssMask, status } = display;
-  const tint = (c) => ((c ^ ssXor) & ssMask) >> 1;
-  const bg = (io.colubk ?? 0x84) >> 1;
-  const p0 = (io.colup0 ?? 0x1c) >> 1;
-  const data = screenImage.data;
-  const put = (s, x, index) => {
-    const rgb = x < 8 ? 0 : NTSC_PALETTE_RGB[index]; // HMOVE every line blanks the first 8 pixels
-    const o = (s * 160 + x) * 4;
-    data[o] = rgb >> 16;
-    data[o + 1] = (rgb >> 8) & 0xff;
-    data[o + 2] = rgb & 0xff;
-    data[o + 3] = 255;
-  };
-  for (let s = 0; s < KERNEL_LINES; s += 1) {
-    const pfColor = tint(pf[s].colupf);
-    const p1Color = tint(objs[s].colup1);
-    const m = masks[s];
-    for (let x = 0; x < 160; x += 1) {
-      // TIA priority: P0/M0 > P1 > PF > BK
-      put(s, x, (m.p0[x] || m.m0[x]) ? p0 : m.p1[x] ? p1Color : m.pf[x] ? pfColor : bg);
-    }
-  }
-  // the kernel's last playfield line shows once more while DisplayState starts
-  const lastPf = masks[KERNEL_LINES - 1].pf, lastColor = tint(pf[KERNEL_LINES - 1].colupf);
-  for (let x = 0; x < 160; x += 1) put(KERNEL_LINES, x, lastPf[x] ? lastColor : bg);
-  status.forEach((line, i) => {
-    const row = statusLinePixels(line);
-    for (let x = 0; x < 160; x += 1) put(KERNEL_LINES + 1 + i, x, row[x] >> 1);
-  });
+  drawScreen(display, io, screenImage);
   screenCtx.putImageData(screenImage, 0, 0);
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(screen, 0, 0, logicalWidth, logicalHeight);
@@ -301,6 +248,14 @@ function frame(timestamp) {
   if (!lastFrameTime) lastFrameTime = timestamp;
   const delta = Math.min(100, timestamp - lastFrameTime);
   lastFrameTime = timestamp;
+  pad = readGamepad();
+  const edges = gamepadEdges(pad);
+  if (edges.start) pressReset();
+  if (edges.back && screenState === SCREEN_PLAYING) {
+    paused = !paused;
+    pauseButton.textContent = paused ? 'Resume' : 'Pause';
+    sendAudio();
+  }
   if (!paused) {
     accumulatorMs += delta;
     while (accumulatorMs >= frameStepMs) {
@@ -331,9 +286,8 @@ window.addEventListener('keydown', (event) => {
 
 // the game loop stops while the page is hidden, so the last tone must not hang
 document.addEventListener('visibilitychange', () => {
-  if (!audioCtx) return;
-  if (document.hidden) audioCtx.suspend();
-  else audioCtx.resume();
+  if (document.hidden) audio.suspend();
+  else audio.resume();
 });
 
 window.addEventListener('keyup', (event) => {

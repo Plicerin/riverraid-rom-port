@@ -104,8 +104,44 @@
     border-radius: 14px;
     box-shadow: 0 0 0 1px #1b2050, 0 30px 80px -30px #2d32b8;
   }
-  .screen img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 320 / 199; }
-  .screen figcaption { margin-top: 12px; font: 400 0.8rem/1.5 var(--mono); color: var(--ink-soft); }
+  .screen figcaption { margin-top: 14px; font: 400 0.8rem/1.5 var(--mono); color: var(--ink-soft); }
+  .tv { position: relative; }
+  .tv canvas, .poster img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 640 / 398; image-rendering: pixelated; }
+  .tv canvas:focus-visible { outline: 2px solid var(--jet); outline-offset: 4px; }
+  .poster { position: absolute; inset: 0; display: grid; place-items: center; }
+  .poster[hidden] { display: none; }
+  .poster img { position: absolute; inset: 0; height: 100%; }
+  .play {
+    position: relative;
+    font: 900 1.6rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em;
+    color: #0a0d26; background: var(--jet);
+    border: 0; border-radius: 4px; padding: 14px 26px;
+    box-shadow: 0 6px 0 #8f8f1c, 0 14px 30px -6px #000;
+    cursor: pointer;
+  }
+  .play:hover { filter: brightness(1.08); }
+  .play:active { transform: translateY(3px); box-shadow: 0 3px 0 #8f8f1c, 0 8px 20px -6px #000; }
+  .console { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+  .switch {
+    font: 600 0.72rem/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink); background: var(--night-2);
+    border: 1px solid var(--rule); border-radius: 3px; padding: 9px 12px; cursor: pointer;
+  }
+  .switch:hover { border-color: var(--ink-soft); }
+  .switch[aria-pressed="true"] { color: var(--jet); border-color: var(--jet); }
+  .hint { margin: 0 0 0 auto; font: 400 0.8rem/1.4 var(--mono); color: var(--ink-soft); min-width: 0; }
+  .pad { display: none; margin-top: 16px; justify-content: space-between; align-items: center; gap: 16px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 48px); gap: 4px; }
+  .dpad button, .fire {
+    font: 700 1.1rem/1 var(--display); color: var(--ink); background: var(--night-2);
+    border: 1px solid var(--rule); border-radius: 6px; touch-action: none;
+  }
+  .dpad [data-hold="up"] { grid-area: 1 / 2; }
+  .dpad [data-hold="left"] { grid-area: 2 / 1; }
+  .dpad [data-hold="right"] { grid-area: 2 / 3; }
+  .dpad [data-hold="down"] { grid-area: 3 / 2; }
+  .fire { width: 96px; height: 96px; border-radius: 50%; background: var(--fuel); color: #fff; text-transform: uppercase; letter-spacing: 0.06em; }
+  @media (pointer: coarse) { .pad { display: flex; } }
 
   .facts {
     display: grid;
@@ -186,11 +222,32 @@
   <main>
     <div class="kicker">Atari 2600 &middot; 1982 &middot; 4 KB cartridge</div>
     <h1>River <span>Raid</span></h1>
-    <p class="byline">Designed and programmed by Carol Shaw. A tribute, and the story of rebuilding it instruction by instruction.</p>
+    <p class="byline">Designed and programmed by Carol Shaw. A tribute you can play, and the story of rebuilding it instruction by instruction.</p>
 
-    <figure class="screen">
-      <img class="px" src="data:image/png;base64,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" alt="River Raid's opening screen: a straight blue river between green banks, a helicopter, a fuel depot and a ship ahead, a house on the left bank, the yellow jet on the road, and the grey status bar with score, fuel gauge and the Activision logo.">
-      <figcaption>The first frame after RESET, drawn by the port. It matches a Stella capture pixel for pixel, all 31,840 of them.</figcaption>
+    <figure class="screen player" id="player">
+      <div class="tv">
+        <canvas width="640" height="398" tabindex="0" aria-label="River Raid. Use the arrow keys or WASD to fly, Space or Z to fire, Enter to reset."></canvas>
+        <div class="poster" data-poster>
+          <img class="px" src="data:image/png;base64,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" alt="River Raid's opening screen: a straight blue river between green banks, a helicopter, a fuel depot and a ship ahead, a house on the left bank, the yellow jet on the road, and the grey status bar with score, fuel gauge and the Activision logo.">
+          <button class="play" type="button" data-play>Play River Raid</button>
+        </div>
+      </div>
+      <div class="console">
+        <button type="button" class="switch" data-reset>Game Reset</button>
+        <button type="button" class="switch" data-pause>Pause</button>
+        <button type="button" class="switch" data-mute aria-pressed="false">Mute</button>
+        <p class="hint" data-hint aria-live="polite">Press Play. Arrows or WASD fly, Space or Z fires. Gamepads work too.</p>
+      </div>
+      <div class="pad" aria-label="Touch controls">
+        <div class="dpad">
+          <button type="button" data-hold="up" aria-label="Speed up">&#9650;</button>
+          <button type="button" data-hold="left" aria-label="Left">&#9664;</button>
+          <button type="button" data-hold="right" aria-label="Right">&#9654;</button>
+          <button type="button" data-hold="down" aria-label="Slow down">&#9660;</button>
+        </div>
+        <button type="button" class="fire" data-hold="fire">Fire</button>
+      </div>
+      <figcaption>This is the port itself, running live. Its first frame after Game Reset matches a Stella capture pixel for pixel, all 31,840 of them.</figcaption>
     </figure>
 
     <section aria-labelledby="h-river">
@@ -282,7 +339,13 @@
     </section>
 
     <footer>
-      <p>A fan tribute. <i>River Raid</i> &copy; 1982 Activision, designed and programmed by Carol Shaw. The port was built with the help of Thomas Jentzsch's 2001 disassembly and is colored with Stella's NTSC palette. Every image on this page was rendered by the port. No cartridge code or data is included.</p>
+      <p>A fan tribute. <i>River Raid</i> &copy; 1982 Activision, designed and programmed by Carol Shaw. The game at the top is the port: the cartridge's routines rewritten in JavaScript, with its graphics and tables, built with the help of Thomas Jentzsch's 2001 disassembly and colored with Stella's NTSC palette. The ROM file itself is not included. Every image on this page was rendered by the port.</p>
     </footer>
   </main>
 </div>
+
+<script type="module">
+  import { mountPlayer } from './tributePlayer.mjs';
+  const boot = () => mountPlayer(document.getElementById('player'));
+  window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot();
+</script>
