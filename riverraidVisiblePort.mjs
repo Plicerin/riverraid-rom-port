@@ -525,7 +525,7 @@ export function rngStep(state16) {
 
 // Stella's standard NTSC palette (src/common/PaletteHandler.cxx, ourNTSCPalette),
 // indexed by colorByte >> 1 (bit 0 is ignored by the TIA).
-const NTSC_PALETTE_RGB = Object.freeze([
+export const NTSC_PALETTE_RGB = Object.freeze([
   0x000000, 0x4a4a4a, 0x6f6f6f, 0x8e8e8e, 0xaaaaaa, 0xc0c0c0, 0xd6d6d6, 0xececec,
   0x484800, 0x69690f, 0x86861d, 0xa2a22a, 0xbbbb35, 0xd2d240, 0xe8e84a, 0xfcfc54,
   0x7c2c00, 0x904811, 0xa26221, 0xb47a30, 0xc3903d, 0xd2a44a, 0xdfb755, 0xecc860,

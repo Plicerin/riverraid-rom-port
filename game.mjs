@@ -1,5 +1,6 @@
-import * as visiblePort from './riverraidVisiblePort.mjs';
-import { resolvePlayerJetBitmap } from './playerJetSprite.mjs';
+import { romReset, runFrame, Z, LOW } from './riverraidFrame.mjs';
+import { NTSC_PALETTE_RGB } from './riverraidVisiblePort.mjs';
+import { KERNEL_LINES } from './riverraidRiver.mjs';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -12,67 +13,31 @@ const livesEl = document.getElementById('lives');
 const sectionEl = document.getElementById('section');
 const debugEl = document.getElementById('debug');
 
-const memory = visiblePort.createZeroPageMemory();
-const pressed = new Set();
 const logicalWidth = canvas.width;
 const logicalHeight = canvas.height;
-const SLOT_NAMES = ['A', 'B', 'C', 'D', 'E', 'F'];
 const SCREEN_TITLE = 'title';
 const SCREEN_PLAYING = 'playing';
 const SCREEN_GAME_OVER = 'game-over';
+const frameStepMs = 1000 / 60;
+const RESET_HOLD_FRAMES = 2;
 
+// The ROM's zero page; every variable lives at its ROM address.
+const memory = new Uint8Array(0x100);
+const pressed = new Set();
+const io = { swcha: 0xff, swchb: 0x0b, inpt4: 0x80, inpt5: 0x80 };
+let display = null;
 let screenState = SCREEN_TITLE;
 let paused = false;
+let resetHold = 0;
 let lastFrameTime = 0;
 let accumulatorMs = 0;
-let lastStepResult = null;
-const frameStepMs = 1000 / 60;
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function shapeColor(shapeId) {
-  const colors = {
-    [visiblePort.SHAPE_IDS.ID_EXPLOSION0]: visiblePort.ntscColorCss(visiblePort.COLORS.RED),
-    [visiblePort.SHAPE_IDS.ID_EXPLOSION1]: visiblePort.ntscColorCss(visiblePort.COLORS.ORANGE),
-    [visiblePort.SHAPE_IDS.ID_EXPLOSION2]: visiblePort.ntscColorCss(visiblePort.COLORS.YELLOW),
-    [visiblePort.SHAPE_IDS.ID_EXPLOSION3]: visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.LIGHT_GREY),
-    [visiblePort.SHAPE_IDS.ID_PLANE]: visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.LIGHT_GREY),
-    [visiblePort.SHAPE_IDS.ID_HELI0]: visiblePort.ntscColorCss(visiblePort.COLORS.GREY),
-    [visiblePort.SHAPE_IDS.ID_HELI1]: visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.LIGHT_GREY),
-    [visiblePort.SHAPE_IDS.ID_SHIP]: visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.BROWN),
-    [visiblePort.SHAPE_IDS.ID_BRIDGE]: visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.BROWN),
-    [visiblePort.SHAPE_IDS.ID_HOUSE]: visiblePort.ntscColorCss(visiblePort.COLORS.GREEN),
-    [visiblePort.SHAPE_IDS.ID_FUEL]: visiblePort.ntscColorCss(visiblePort.COLORS.CYAN),
-  };
-  return colors[shapeId] || visiblePort.ntscColorCss(visiblePort.DERIVED_COLORS.LIGHT_GREY);
-}
-
-function drawBitmap(targetCtx, bitmap, centerX, centerY, color, options = {}) {
-  if (!bitmap?.length) return;
-  const scale = options.scale ?? 3;
-  const scaleX = options.scaleX ?? scale;
-  const scaleY = options.scaleY ?? scale;
-  const reflect = !!options.reflect;
-  const height = bitmap.length * scaleY;
-  // With options.leftX, centerX is ignored and copies sit at options.copyOffsets (canvas px).
-  const startX = options.leftX ?? (centerX - (bitmap[0].length * scaleX) / 2);
-  const copyOffsets = options.copyOffsets ?? [0];
-  targetCtx.fillStyle = color;
-  for (const copyOffset of copyOffsets) {
-    const leftX = startX + copyOffset;
-    for (let row = 0; row < bitmap.length; row += 1) {
-      const bits = bitmap[row];
-      if (options.rowColors?.[row]) targetCtx.fillStyle = options.rowColors[row];
-      for (let col = 0; col < bits.length; col += 1) {
-        if (bits[col] !== '1') continue;
-        const pixelCol = reflect ? (bits.length - 1 - col) : col;
-        targetCtx.fillRect(leftX + pixelCol * scaleX, centerY - height / 2 + row * scaleY, scaleX, scaleY);
-      }
-    }
-  }
-}
+// 160x160 kernel image, scaled to the canvas
+const screen = document.createElement('canvas');
+screen.width = 160;
+screen.height = KERNEL_LINES;
+const screenCtx = screen.getContext('2d');
+const screenImage = screenCtx.createImageData(160, KERNEL_LINES);
 
 const BLOCK_GLYPHS = Object.freeze({
   '0': ['111','101','101','101','111'],
@@ -114,6 +79,7 @@ const BLOCK_GLYPHS = Object.freeze({
   '-': ['000','000','111','000','000'],
   '.': ['000','000','000','000','010'],
   ':': ['000','010','000','010','000'],
+  '!': ['010','010','010','000','010'],
   ' ': ['000','000','000','000','000'],
 });
 
@@ -147,462 +113,162 @@ function drawBlockText(text, x, y, options = {}) {
   }
 }
 
-// Object bitmaps are one scanline per row, so draw them at the playfield's
-// line/clock scale. NUSIZ stretches width and places copies as the TIA does.
-function spriteLayoutForSlot(slot) {
-  const nusiz = visiblePort.decodeNUSIZDetail(slot?.state1?.nusiz ?? 0);
-  const clockPx = logicalWidth / 160;
-  return {
-    scaleX: clockPx * (nusiz.playerPixelWidth / 8),
-    scaleY: logicalHeight / visiblePort.GAME_CONSTANTS.NUM_LINES,
-    leftX: xToCanvas(slot.inspectX ?? slot.coarseX),
-    copyOffsets: nusiz.copyOffsets.map((offset) => offset * clockPx),
-  };
-}
+// *** ROM state readers ***
 
-function xToCanvas(x) {
-  return (x / 160) * logicalWidth;
-}
-
-function computeSafeSpawnX(preferredX = 80) {
-  const rawPlayerX = clamp(preferredX, 0, 159);
-  const riverBounds = visiblePort.inspectVisibleJetRiverBounds(memory, { playerX: rawPlayerX });
-  if (!riverBounds.collidedWithBank) return rawPlayerX;
-  return Math.floor((riverBounds.leftBound + riverBounds.rightBound) / 2);
-}
-
-function previewSpawnLane(candidateX, previewSteps = 180) {
-  const probeMemory = visiblePort.createZeroPageMemory();
-  probeMemory.set(memory);
-  for (let step = 0; step < previewSteps; step += 1) {
-    const riverBounds = visiblePort.inspectVisibleJetRiverBounds(probeMemory, { playerX: candidateX });
-    if (riverBounds.collidedWithBank || riverBounds.clampedPlayerX !== candidateX) {
-      return { safe: false, survivedSteps: step, reason: 'bank' };
-    }
-    visiblePort.setField(probeMemory, 'playerX', candidateX);
-    visiblePort.setField(probeMemory, 'joystick', 0x00);
-    const loopStep = visiblePort.stepVisibleGameplayLoop(probeMemory);
-    if (loopStep.lastStep.playerCrash) {
-      return { safe: false, survivedSteps: step, reason: loopStep.lastStep.playerCrashKind };
-    }
+// The score lives in six digit pointers (scorePtr1+0..+10, low bytes); Space = blank.
+function scoreText() {
+  let text = '';
+  for (let offset = 0; offset <= 10; offset += 2) {
+    const low = memory[Z.scorePtr1 + offset];
+    if (low === LOW.Space) text += ' ';
+    else if (low === LOW.MaxOut) text += '!';
+    else text += String(Math.min(9, low >> 3));
   }
-  return { safe: true, survivedSteps: previewSteps, reason: 'clear' };
+  return text.trim() || '0';
 }
 
-function computeSafePlayableSpawnX(preferredX = 80) {
-  const baseX = computeSafeSpawnX(preferredX);
-  const tried = new Set();
-  let bestCandidate = { x: baseX, survivedSteps: -1, distance: Infinity };
-  for (let delta = 0; delta < 160; delta += 1) {
-    const candidates = delta === 0 ? [baseX] : [baseX + delta, baseX - delta];
-    for (const candidate of candidates) {
-      const x = clamp(candidate, 0, 159);
-      if (tried.has(x)) continue;
-      tried.add(x);
-      const preview = previewSpawnLane(x);
-      const distance = Math.abs(x - preferredX);
-      if (preview.safe) return x;
-      if (preview.survivedSteps > bestCandidate.survivedSteps || (preview.survivedSteps === bestCandidate.survivedSteps && distance < bestCandidate.distance)) {
-        bestCandidate = { x, survivedSteps: preview.survivedSteps, distance };
-      }
-    }
-  }
-  return bestCandidate.x;
+function livesCount() {
+  const low = memory[Z.livesPtr];
+  return low <= LOW.Nine ? low >> 3 : 0;
 }
 
-function resetToPlayableStart() {
-  visiblePort.applyVisibleResetLogic(memory);
-  visiblePort.setField(memory, 'frameCnt', 0x00);
-  visiblePort.setField(memory, 'gameMode', visiblePort.GAME_CONSTANTS.INTRO_SCROLL);
-  visiblePort.setField(memory, 'sectionBlock', visiblePort.GAME_CONSTANTS.SECTION_BLOCKS);
-  visiblePort.setField(memory, 'sectionEnd', 0x01);
-  visiblePort.setField(memory, 'blockOffset', 0x00);
-  visiblePort.setField(memory, 'blockPart', 0x01);
-  visiblePort.setField(memory, 'PF1PatId', 0x00);
-  visiblePort.setField(memory, 'prevPF1PatId', 0x00);
-  visiblePort.setField(memory, 'temp3', 0x00);
-  visiblePort.setField(memory, 'lineNum', 0x00);
-  visiblePort.setField(memory, 'posYLo', 0x00);
-  visiblePort.setField(memory, 'fuelHi', 183);
-  visiblePort.setField(memory, 'fuelLo', 0xff);
-  visiblePort.setField(memory, 'playerX', 80);
-  visiblePort.setField(memory, 'speedX', 0x00);
-  visiblePort.setField(memory, 'speedY', 0x00);
-  visiblePort.setField(memory, 'dXSpeed', 0x00);
-  visiblePort.setField(memory, 'joystick', 0x00);
-  visiblePort.setField(memory, 'bridgeExplode', 0x00);
-  visiblePort.setField(memory, 'bridgeSound', 0x00);
-  visiblePort.setField(memory, 'missileFlag', 0x00);
-  visiblePort.setField(memory, 'missileSound', 0x00);
-  visiblePort.setField(memory, 'missileY', visiblePort.GAME_CONSTANTS.MAX_MISSILE);
-  visiblePort.setField(memory, 'missileX', 88);
-  visiblePort.setField(memory, 'gameVariation', 0x00);
-  visiblePort.setField(memory, 'level', 0x00);
-  visiblePort.writeByte(memory, visiblePort.ZERO_PAGE_INDEX.livesPtr.address, 3);
-  // RESET-switch path: SetScorePtrs with A = <Zero (units '0', leading digits blank).
-  // applyVisibleResetLogic models first boot, which shows the game number '1' instead.
-  visiblePort.writeVisibleScoreDigits(memory, [0, 0, 0, 0, 0, 0]);
-  visiblePort.advanceVisibleSlotScene(memory);
-  const safePlayerX = computeSafePlayableSpawnX(80);
-  visiblePort.setField(memory, 'playerX', safePlayerX);
-  visiblePort.setField(memory, 'missileX', Math.min(159, safePlayerX + 8));
-  accumulatorMs = 0;
-  lastStepResult = null;
+function fuelPercent() {
+  return Math.round((memory[Z.fuelHi] / 255) * 100);
 }
 
-function startGame() {
-  resetToPlayableStart();
+function gameModeLabel() {
+  const mode = memory[Z.gameMode];
+  if (mode === 0) return 'running';
+  if (mode === 0xff) return 'game over';
+  if (mode === 48) return 'ready';
+  if (mode & 0x80) return 'crashed';
+  return `scroll ${mode}`;
+}
+
+// *** frame stepping ***
+
+function readInputs() {
+  let swcha = 0xff;
+  if (pressed.has('ArrowRight') || pressed.has('KeyD')) swcha &= ~0x80;
+  if (pressed.has('ArrowLeft') || pressed.has('KeyA')) swcha &= ~0x40;
+  if (pressed.has('ArrowDown') || pressed.has('KeyS')) swcha &= ~0x20;
+  if (pressed.has('ArrowUp') || pressed.has('KeyW')) swcha &= ~0x10;
+  io.swcha = screenState === SCREEN_PLAYING ? swcha : 0xff;
+  io.inpt4 = screenState === SCREEN_PLAYING && (pressed.has('Space') || pressed.has('KeyZ')) ? 0x00 : 0x80;
+  io.inpt5 = 0x80;
+  io.swchb = resetHold > 0 ? 0x0a : 0x0b; // bit 0 low = RESET switch pressed
+  io.swchbNext = undefined;
+}
+
+function stepGame() {
+  readInputs();
+  const wasOver = memory[Z.gameMode] === 0xff;
+  display = runFrame(memory, io).display;
+  if (resetHold > 0) resetHold -= 1;
+  if (screenState === SCREEN_PLAYING && !wasOver && memory[Z.gameMode] === 0xff) screenState = SCREEN_GAME_OVER;
+}
+
+function pressReset() {
+  resetHold = RESET_HOLD_FRAMES;
   screenState = SCREEN_PLAYING;
   paused = false;
   pauseButton.textContent = 'Pause';
 }
 
-function showTitle() {
-  screenState = SCREEN_TITLE;
-  paused = false;
-  accumulatorMs = 0;
-  lastStepResult = null;
-  pauseButton.textContent = 'Pause';
-}
+// *** drawing ***
 
-function currentJoystickByte() {
-  let value = 0;
-  if (pressed.has('ArrowRight') || pressed.has('KeyD')) value |= visiblePort.FLAGS.joystick.MOVE_RIGHT;
-  if (pressed.has('ArrowLeft') || pressed.has('KeyA')) value |= visiblePort.FLAGS.joystick.MOVE_LEFT;
-  if (pressed.has('ArrowDown') || pressed.has('KeyS')) value |= visiblePort.FLAGS.joystick.MOVE_DOWN;
-  if (pressed.has('ArrowUp') || pressed.has('KeyW')) value |= visiblePort.FLAGS.joystick.MOVE_UP;
-  return value & 0xff;
-}
-
-function syncJoystick() {
-  visiblePort.setField(memory, 'joystick', currentJoystickByte());
-}
-
-function fireMissile() {
-  if (screenState !== SCREEN_PLAYING) return;
-  visiblePort.fireVisibleMissile(memory);
-}
-
-function stepGame() {
-  if (screenState !== SCREEN_PLAYING) return;
-  syncJoystick();
-  lastStepResult = visiblePort.stepVisibleGameplayLoop(memory);
-  if (lastStepResult?.lastStep?.respawned) {
-    const safePlayerX = computeSafePlayableSpawnX(80);
-    visiblePort.setField(memory, 'playerX', safePlayerX);
-    visiblePort.setField(memory, 'missileX', Math.min(159, safePlayerX + 8));
-  }
-  if (lastStepResult?.lastStep?.respawnBlocked) {
-    screenState = SCREEN_GAME_OVER;
-    paused = false;
-    pauseButton.textContent = 'Pause';
-  }
-}
-
-function buildTerrainRows(rows, targetBands = 48) {
-  if (!rows.length) return [];
-  const anchors = rows.map((row) => ({
-    ...row,
-    yMid: (row.yTop + row.yBottom) / 2,
-  })).sort((a, b) => a.yMid - b.yMid);
-  const bandCount = Math.max(rows.length, targetBands);
-  const out = [];
-  for (let band = 0; band < bandCount; band += 1) {
-    const yTop = Math.floor((band / bandCount) * logicalHeight);
-    const yBottom = Math.floor(((band + 1) / bandCount) * logicalHeight);
-    const yMid = (yTop + yBottom) / 2;
-    let lower = anchors[0];
-    let upper = anchors[anchors.length - 1];
-    for (let index = 0; index < anchors.length; index += 1) {
-      if (anchors[index].yMid <= yMid) lower = anchors[index];
-      if (anchors[index].yMid >= yMid) {
-        upper = anchors[index];
-        break;
+function drawKernel() {
+  if (!display) return;
+  const { pf, objs, masks, ssXor, ssMask } = display;
+  const tint = (c) => ((c ^ ssXor) & ssMask) >> 1;
+  const bg = (io.colubk ?? 0x84) >> 1;
+  const p0 = (io.colup0 ?? 0x1c) >> 1;
+  const data = screenImage.data;
+  for (let s = 0; s < KERNEL_LINES; s += 1) {
+    const pfColor = tint(pf[s].colupf);
+    const p1Color = tint(objs[s].colup1);
+    const m = masks[s];
+    for (let x = 0; x < 160; x += 1) {
+      // HMOVE every line blanks the first 8 pixels; TIA priority P0/M0 > P1 > PF > BK
+      let rgb = 0;
+      if (x >= 8) {
+        const index = (m.p0[x] || m.m0[x]) ? p0 : m.p1[x] ? p1Color : m.pf[x] ? pfColor : bg;
+        rgb = NTSC_PALETTE_RGB[index];
       }
+      const o = (s * 160 + x) * 4;
+      data[o] = rgb >> 16;
+      data[o + 1] = (rgb >> 8) & 0xff;
+      data[o + 2] = rgb & 0xff;
+      data[o + 3] = 255;
     }
-    const span = Math.max(1, upper.yMid - lower.yMid);
-    const t = lower === upper ? 0 : clamp((yMid - lower.yMid) / span, 0, 1);
-    const left = Math.round(lower.left + ((upper.left - lower.left) * t));
-    const right = Math.round(lower.right + ((upper.right - lower.right) * t));
-    const nearest = Math.abs(yMid - lower.yMid) <= Math.abs(yMid - upper.yMid) ? lower : upper;
-    out.push({
-      yTop,
-      yBottom: Math.max(yTop + 1, yBottom),
-      yMid,
-      left,
-      right,
-      width: right - left,
-      nearest,
-    });
   }
-  return out;
-}
-
-function drawBackground(rows) {
-  // Banks are PF in GREEN (bright variant: | PF_COLOR_FLAG); water is COLUBK = BLUE.
-  ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.GREEN | visiblePort.FLAGS.blockLst.PF_COLOR_FLAG);
-  ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-
-  const terrainRows = buildTerrainRows(rows);
-  ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.BLUE);
-  ctx.beginPath();
-  terrainRows.forEach((row, index) => {
-    const left = xToCanvas(row.left);
-    if (index === 0) ctx.moveTo(left, row.yTop);
-    else ctx.lineTo(left, row.yTop);
-    if (index === terrainRows.length - 1) ctx.lineTo(left, row.yBottom);
-  });
-  for (let index = terrainRows.length - 1; index >= 0; index -= 1) {
-    const row = terrainRows[index];
-    const right = xToCanvas(row.right);
-    ctx.lineTo(right, row.yBottom);
-    if (index === 0) ctx.lineTo(right, row.yTop);
-  }
-  ctx.closePath();
-  ctx.fill();
-
-  terrainRows.forEach((row, index) => {
-    const left = xToCanvas(row.left);
-    const right = xToCanvas(row.right);
-    ctx.fillStyle = index % 2 === 0 ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.032)';
-    ctx.fillRect(left, row.yTop, Math.max(1, right - left), row.yBottom - row.yTop);
-    if (row.nearest?.carriesRoadBit) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo((left + right) / 2, row.yTop + 1);
-      ctx.lineTo((left + right) / 2, row.yBottom - 1);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-  });
-
-  ctx.strokeStyle = 'rgba(210, 237, 255, 0.85)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  terrainRows.forEach((row, index) => {
-    const xMid = xToCanvas((row.left + row.right) / 2);
-    if (index === 0) ctx.moveTo(xMid, row.yMid);
-    else ctx.lineTo(xMid, row.yMid);
-  });
-  ctx.stroke();
-}
-
-function drawWorld() {
-  ctx.clearRect(0, 0, logicalWidth, logicalHeight);
-  const scroll = visiblePort.inspectVisibleRiverScrollState(memory);
-  const frameCnt = visiblePort.getField(memory, 'frameCnt');
-  const gameMode = visiblePort.getField(memory, 'gameMode');
-  const slots = visiblePort.inspectVisibleSlots(memory);
-  const logicalYToCanvas = line => (line / visiblePort.GAME_CONSTANTS.NUM_LINES) * logicalHeight;
-  const rows = scroll.compositeSlices.map((slice, index) => {
-    const lineTop = (index * scroll.sliceLineSpan) - scroll.pixelOffset;
-    const lineBottom = ((index + 1) * scroll.sliceLineSpan) - scroll.pixelOffset;
-    return {
-      ...slice,
-      yTop: Math.floor(logicalHeight - logicalYToCanvas(lineBottom)),
-      yBottom: Math.floor(logicalHeight - logicalYToCanvas(lineTop)),
-      slotIndexWrapped: slice.slotIndex % slots.length,
-      projectedSlot: slice.projectedSlot ?? slots[slice.slotIndex % slots.length] ?? null,
-    };
-  }).filter((row) => row.yBottom > 0 && row.yTop < logicalHeight)
-    .sort((a, b) => a.yTop - b.yTop);
-
-  drawBackground(rows);
-
-  rows.forEach((row, index) => {
-    const rowH = row.yBottom - row.yTop;
-    if (rowH <= 0) return;
-    const left = xToCanvas(row.left);
-    const right = xToCanvas(row.right);
-    const centerY = row.yTop + rowH / 2;
-    const slot = row.projectedSlot ?? slots[row.slotIndexWrapped] ?? null;
-
-    if (row.source === 'next') {
-      ctx.fillStyle = 'rgba(255,214,102,0.06)';
-      ctx.fillRect(left, row.yTop, Math.max(1, right - left), rowH);
-    }
-    if (index === 0 || row.source !== rows[index - 1]?.source) {
-      ctx.strokeStyle = row.source === 'next' ? 'rgba(255,214,102,0.22)' : 'rgba(255,255,255,0.06)';
-      ctx.beginPath();
-      ctx.moveTo(0, row.yTop + 0.5);
-      ctx.lineTo(logicalWidth, row.yTop + 0.5);
-      ctx.stroke();
-    }
-
-    if (row.carriesRoadBit) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.32)';
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath();
-      ctx.moveTo((left + right) / 2, row.yTop + 4);
-      ctx.lineTo((left + right) / 2, row.yBottom - 4);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    if (row.isBridgeRow) {
-      ctx.fillStyle = '#8d6e63';
-      ctx.fillRect(left - 8, centerY - 5, (right - left) + 16, 10);
-      ctx.strokeStyle = '#d7b98e';
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(left - 8, centerY - 5, (right - left) + 16, 10);
-    }
-
-    if (!slot || slot.coarseX <= 0) return;
-    const sprite = visiblePort.resolveVisibleSpriteVariant(slot.shapeId, frameCnt);
-    const spriteOptions = {
-      ...spriteLayoutForSlot(slot),
-      reflect: slot.state1?.refp1Label === 'reflected',
-      rowColors: sprite.rowColors?.map(visiblePort.ntscColorCss),
-    };
-    drawBitmap(ctx, sprite.bitmap, 0, centerY, shapeColor(slot.shapeId), spriteOptions);
-  });
-
-  const playerX = visiblePort.getField(memory, 'playerX');
-  const playerBounds = visiblePort.inspectVisibleJetRiverBounds(memory, { playerX });
-  const jetBitmap = resolvePlayerJetBitmap(frameCnt, gameMode);
-  const jetX = xToCanvas(playerBounds.clampedPlayerX);
-  const jetY = logicalHeight - ((visiblePort.GAME_CONSTANTS.JET_Y / visiblePort.GAME_CONSTANTS.NUM_LINES) * logicalHeight);
-  drawBitmap(ctx, jetBitmap, jetX, jetY, visiblePort.ntscColorCss(visiblePort.COLORS.YELLOW), { scale: 3, leftX: jetX });
-  if (playerBounds.collidedWithBank) {
-    ctx.strokeStyle = visiblePort.ntscColorCss(visiblePort.COLORS.RED);
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(jetX + 2, jetY - 12);
-    ctx.lineTo(jetX + 22, jetY + 12);
-    ctx.moveTo(jetX + 22, jetY - 12);
-    ctx.lineTo(jetX + 2, jetY + 12);
-    ctx.stroke();
-  }
-
-  const missileFlag = visiblePort.getField(memory, 'missileFlag');
-  const missileY = visiblePort.getField(memory, 'missileY');
-  const missileX = visiblePort.getField(memory, 'missileX');
-  if (missileFlag === 0xff && missileY >= visiblePort.GAME_CONSTANTS.MIN_MISSILE) {
-    // Same frame as the model's hit test: missileY counts lines up from the bottom.
-    const my = logicalHeight - logicalYToCanvas(missileY);
-    const mx = xToCanvas(missileX);
-    ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.RED);
-    ctx.fillRect(Math.floor(mx - 2), Math.floor(my - 4), 4, 8);
-  }
-
-  const fuelBarX = clamp(visiblePort.computeFuelDisplayBallValue(visiblePort.getField(memory, 'fuelHi')), 0, 159);
-  const fuelX = Math.floor(xToCanvas(fuelBarX));
-  ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.YELLOW);
-  ctx.fillRect(fuelX - 3, Math.floor(jetY - 21), 6, 6);
-}
-
-function sectionLabel(sectionBlock) {
-  return sectionBlock === 0 ? 'END' : String(visiblePort.GAME_CONSTANTS.SECTION_BLOCKS - sectionBlock + 1);
+  screenCtx.putImageData(screenImage, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(screen, 0, 0, logicalWidth, logicalHeight);
 }
 
 function drawCanvasHud() {
-  const score = String(visiblePort.computeVisibleScore(memory));
-  const fuelPct = Math.round(visiblePort.computeFuelPercent(memory));
-  const lives = visiblePort.readByte(memory, visiblePort.ZERO_PAGE_INDEX.livesPtr.address);
-  const section = sectionLabel(visiblePort.getField(memory, 'sectionBlock'));
-  const fuelBarWidth = Math.max(0, Math.min(120, Math.round((fuelPct / 100) * 120)));
-
+  const fuelPct = fuelPercent();
+  const fuelBarWidth = Math.max(0, Math.min(102, Math.round((fuelPct / 100) * 102)));
   ctx.save();
   ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
   ctx.fillRect(0, 0, logicalWidth, 42);
-  drawBlockText(score, 14, 13, { scale: 3, color: '#ffd166' });
-  drawBlockText(`LIVES ${lives}`, 116, 13, { scale: 3, color: '#e8f0ff' });
-  drawBlockText(`SEC ${section}`, 238, 13, { scale: 3, color: '#e8f0ff' });
-
+  drawBlockText(scoreText(), 14, 13, { scale: 3, color: '#ffd166' });
+  drawBlockText(`LIVES ${livesCount()}`, 116, 13, { scale: 3, color: '#e8f0ff' });
+  drawBlockText(`SEC ${memory[Z.level]}`, 238, 13, { scale: 3, color: '#e8f0ff' });
   ctx.strokeStyle = '#e8f0ff';
   ctx.strokeRect(logicalWidth - 128, 12, 104, 18);
   ctx.fillStyle = fuelPct <= 25 ? '#ff6b6b' : '#5cc8ff';
-  ctx.fillRect(logicalWidth - 127, 13, Math.round((fuelBarWidth / 120) * 102), 16);
+  ctx.fillRect(logicalWidth - 127, 13, fuelBarWidth, 16);
   drawBlockText('FUEL', logicalWidth - 138, 15, { scale: 2, color: '#e8f0ff', align: 'right' });
   ctx.restore();
 }
 
-function drawCenteredText(lines, options = {}) {
+function drawCenteredText(lines) {
   ctx.save();
-  ctx.fillStyle = 'rgba(3, 10, 18, 0.78)';
+  ctx.fillStyle = 'rgba(3, 10, 18, 0.62)';
   ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   lines.forEach((line) => {
-    if (line.scale) {
-      drawBlockText(line.text, logicalWidth / 2, (logicalHeight / 2) + line.yOffset, {
-        align: 'center',
-        color: line.color ?? options.color ?? '#e8f0ff',
-        scale: line.scale,
-      });
-      return;
-    }
-    ctx.font = line.font ?? options.font ?? '700 28px ui-monospace, monospace';
-    ctx.fillStyle = line.color ?? options.color ?? '#e8f0ff';
-    ctx.fillText(line.text, logicalWidth / 2, (logicalHeight / 2) + line.yOffset);
+    drawBlockText(line.text, logicalWidth / 2, (logicalHeight / 2) + line.yOffset, {
+      align: 'center',
+      color: line.color ?? '#e8f0ff',
+      scale: line.scale,
+    });
   });
   ctx.restore();
 }
 
-function drawTitleScreen() {
-  ctx.fillStyle = '#06111d';
-  ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-  ctx.fillStyle = '#0f5fa8';
-  ctx.fillRect(logicalWidth * 0.24, 0, logicalWidth * 0.52, logicalHeight);
-  ctx.fillStyle = '#1b5e20';
-  ctx.fillRect(0, 0, logicalWidth * 0.24, logicalHeight);
-  ctx.fillRect(logicalWidth * 0.76, 0, logicalWidth * 0.24, logicalHeight);
-  drawCenteredText([
-    { text: 'RIVER RAID', yOffset: -88, scale: 8, color: '#ffd166' },
-    { text: 'VISIBLE HARNESS', yOffset: -28, scale: 4, color: '#e8f0ff' },
-    { text: 'PRESS SPACE OR ENTER', yOffset: 34, scale: 3, color: '#5cc8ff' },
-    { text: 'ARROWS WASD MOVE  SPACE Z FIRE', yOffset: 74, scale: 2, color: '#8fa6c1' },
-  ]);
-}
-
-function drawGameOverScreen() {
-  drawWorld();
-  drawCanvasHud();
-  const score = String(visiblePort.computeVisibleScore(memory));
-  drawCenteredText([
-    { text: 'GAME OVER', yOffset: -70, scale: 7, color: '#ff6b6b' },
-    { text: `SCORE ${score}`, yOffset: -8, scale: 4, color: '#ffd166' },
-    { text: 'PRESS SPACE OR ENTER', yOffset: 52, scale: 3, color: '#5cc8ff' },
-  ]);
-}
-
 function renderHud() {
-  const score = visiblePort.computeVisibleScore(memory);
-  const fuelPct = Math.round(visiblePort.computeFuelPercent(memory));
-  const sectionBlock = visiblePort.getField(memory, 'sectionBlock');
-  const gameMode = visiblePort.getField(memory, 'gameMode');
-  const frameCnt = visiblePort.getField(memory, 'frameCnt');
-  const lives = visiblePort.readByte(memory, visiblePort.ZERO_PAGE_INDEX.livesPtr.address);
-  const scroll = visiblePort.inspectVisibleRiverScrollState(memory);
-  const lastStep = lastStepResult?.lastStep ?? null;
-  const crashInfo = lastStep?.playerCrash
-    ? ` · crash ${lastStep.playerCrashKind}`
-    : lastStep?.fuelPickup
-      ? ' · fuel pickup'
-      : lastStep?.missileHit
-        ? ` · hit ${lastStep.projectedMissileCollision?.shapeName ?? 'target'}`
-        : '';
-  scoreEl.textContent = String(score);
-  fuelEl.textContent = `${fuelPct}%`;
-  livesEl.textContent = String(lives);
-  sectionEl.textContent = sectionLabel(sectionBlock);
+  scoreEl.textContent = scoreText();
+  fuelEl.textContent = `${fuelPercent()}%`;
+  livesEl.textContent = String(livesCount());
+  sectionEl.textContent = String(memory[Z.level]);
   statusEl.textContent = screenState === SCREEN_TITLE
     ? 'title'
-    : screenState === SCREEN_GAME_OVER
-      ? 'game over'
-      : paused
-        ? 'paused'
-        : visiblePort.GAME_MODES.label(gameMode);
-  debugEl.textContent = `lives ${lives} · frame ${frameCnt} · playerX ${visiblePort.getField(memory, 'playerX')} · seam ${scroll.seamDelta.fromShapeName ?? 'n/a'}→${scroll.seamDelta.toShapeName ?? 'n/a'}${crashInfo}`;
+    : paused
+      ? 'paused'
+      : gameModeLabel();
+  debugEl.textContent = `level ${memory[Z.level]} · block ${memory[Z.sectionBlock]} · offset ${memory[Z.blockOffset]} · playerX ${memory[Z.playerX]} · speedY ${memory[Z.speedY]}`;
 }
 
 function render() {
-  if (screenState === SCREEN_TITLE) drawTitleScreen();
-  else if (screenState === SCREEN_GAME_OVER) drawGameOverScreen();
-  else {
-    drawWorld();
-    drawCanvasHud();
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+  drawKernel();
+  drawCanvasHud();
+  if (screenState === SCREEN_TITLE) {
+    drawCenteredText([
+      { text: 'RIVER RAID', yOffset: -88, scale: 8, color: '#ffd166' },
+      { text: 'ROM PORT', yOffset: -28, scale: 4, color: '#e8f0ff' },
+      { text: 'PRESS SPACE OR ENTER', yOffset: 34, scale: 3, color: '#5cc8ff' },
+      { text: 'ARROWS WASD MOVE  SPACE Z FIRE', yOffset: 74, scale: 2, color: '#8fa6c1' },
+    ]);
+  } else if (screenState === SCREEN_GAME_OVER) {
+    drawCenteredText([
+      { text: 'GAME OVER', yOffset: -70, scale: 7, color: '#ff6b6b' },
+      { text: `SCORE ${scoreText()}`, yOffset: -8, scale: 4, color: '#ffd166' },
+      { text: 'PRESS SPACE OR ENTER', yOffset: 52, scale: 3, color: '#5cc8ff' },
+    ]);
   }
   renderHud();
 }
@@ -611,7 +277,7 @@ function frame(timestamp) {
   if (!lastFrameTime) lastFrameTime = timestamp;
   const delta = Math.min(100, timestamp - lastFrameTime);
   lastFrameTime = timestamp;
-  if (!paused && screenState === SCREEN_PLAYING) {
+  if (!paused) {
     accumulatorMs += delta;
     while (accumulatorMs >= frameStepMs) {
       stepGame();
@@ -623,25 +289,17 @@ function frame(timestamp) {
 }
 
 window.addEventListener('keydown', (event) => {
-  if (event.repeat && event.code === 'Space') return;
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) event.preventDefault();
+  if ((event.code === 'Space' || event.code === 'Enter') && screenState !== SCREEN_PLAYING) {
+    pressReset();
+    return;
+  }
   pressed.add(event.code);
-  if (event.code === 'Space' || event.code === 'Enter') {
-    if (screenState === SCREEN_TITLE || screenState === SCREEN_GAME_OVER) {
-      startGame();
-      return;
-    }
-  }
-  if (event.code === 'Space' || event.code === 'KeyZ') {
-    fireMissile();
-  }
   if (event.code === 'KeyP' && screenState === SCREEN_PLAYING) {
     paused = !paused;
     pauseButton.textContent = paused ? 'Resume' : 'Pause';
   }
-  if (event.code === 'KeyR') {
-    startGame();
-  }
+  if (event.code === 'KeyR') pressReset();
 });
 
 window.addEventListener('keyup', (event) => {
@@ -655,11 +313,11 @@ pauseButton.addEventListener('click', () => {
 });
 
 resetButton.addEventListener('click', () => {
-  startGame();
-  render();
+  pressReset();
 });
 
-resetToPlayableStart();
-showTitle();
+// power on: the ROM clears RAM and runs its attract mode until RESET
+romReset(memory, 0);
+stepGame();
 render();
 window.requestAnimationFrame(frame);
