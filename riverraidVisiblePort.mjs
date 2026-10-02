@@ -145,11 +145,11 @@ const VISIBLE_SLOT_BASE_SHAPES = Object.freeze([
 
 const SCORE_DIGIT_OFFSETS = Object.freeze([0, 2, 4, 6, 8, 10]);
 const SCORE_DIGIT_COUNT = SCORE_DIGIT_OFFSETS.length;
-const SCORE_HARNESS_AWARDS = Object.freeze({
-  missileHit: 1,
-  bridgeHit: 5,
-});
+// ScoreTab (Jentzsch line 3232), points per shape id: explosions 0, plane 100,
+// helis 60, ship 30, bridge 500, house 0, fuel 80.
+const SCORE_TAB_POINTS = Object.freeze([0, 0, 0, 0, 100, 60, 60, 30, 500, 0, 80]);
 const HARNESS_BRIDGE_EXPLOSION_TICKS = 4;
+const MISSILE_X_OFFSET = 5; // LDA playerX / CLC / ADC #$05 / STA missileX
 const HARNESS_OBJECT_MOVE_STEP = 1;
 const HARNESS_PATROL_TURN_PERIOD = 8;
 const HARNESS_RESPAWN_PLAYER_X = 80;
@@ -235,20 +235,20 @@ export const NUSIZ_LABELS = Object.freeze([
 // each NUSIZ value for a player sprite; these are TIA hardware facts
 // referenced by the ASM's named constants, not invented gameplay.
 export const NUSIZ_DETAIL_TABLE = Object.freeze([
-  { value: 0b000, asmName: null,            label: '1 copy',            playerPixelWidth: 8,  copyCount: 1, note: '1 copy, normal size — ASM: no named constant for this value' },
-  { value: 0b001, asmName: 'TWO_COPIES',    label: 'two copies',        playerPixelWidth: 8,  copyCount: 2, note: 'ASM line 159: TWO_COPIES = %001' },
-  { value: 0b010, asmName: null,            label: 'double size',       playerPixelWidth: 16, copyCount: 1, note: '1 copy, double width — ASM: no label for this value' },
-  { value: 0b011, asmName: 'THREE_COPIES',  label: 'three copies',      playerPixelWidth: 8,  copyCount: 3, note: 'ASM line 160: THREE_COPIES = %011' },
-  { value: 0b100, asmName: null,            label: 'two copies wide',   playerPixelWidth: 8,  copyCount: 2, note: '2 copies, wide spacing — ASM: no label for this value' },
-  { value: 0b101, asmName: 'DOUBLE_SIZE',   label: 'double size',       playerPixelWidth: 16, copyCount: 1, note: 'ASM line 161: DOUBLE_SIZE = %101' },
-  { value: 0b110, asmName: null,            label: 'three copies wide', playerPixelWidth: 8,  copyCount: 3, note: '3 copies, medium spacing — ASM: no label for this value' },
-  { value: 0b111, asmName: 'QUAD_SIZE',     label: 'quad size',         playerPixelWidth: 32, copyCount: 1, note: 'ASM line 162: QUAD_SIZE = %111 — TIA renders 4x width for this value' },
+  { value: 0b000, asmName: null,            label: '1 copy',            playerPixelWidth: 8,  copyCount: 1, copyOffsets: [0],         note: '1 copy, normal size — ASM: no named constant for this value' },
+  { value: 0b001, asmName: 'TWO_COPIES',    label: 'two copies',        playerPixelWidth: 8,  copyCount: 2, copyOffsets: [0, 16],     note: 'ASM line 159: TWO_COPIES = %001' },
+  { value: 0b010, asmName: null,            label: 'two copies medium', playerPixelWidth: 8,  copyCount: 2, copyOffsets: [0, 32],     note: '2 copies, medium spacing — ASM: no label for this value' },
+  { value: 0b011, asmName: 'THREE_COPIES',  label: 'three copies',      playerPixelWidth: 8,  copyCount: 3, copyOffsets: [0, 16, 32], note: 'ASM line 160: THREE_COPIES = %011' },
+  { value: 0b100, asmName: null,            label: 'two copies wide',   playerPixelWidth: 8,  copyCount: 2, copyOffsets: [0, 64],     note: '2 copies, wide spacing — ASM: no label for this value' },
+  { value: 0b101, asmName: 'DOUBLE_SIZE',   label: 'double size',       playerPixelWidth: 16, copyCount: 1, copyOffsets: [0],         note: 'ASM line 161: DOUBLE_SIZE = %101' },
+  { value: 0b110, asmName: null,            label: 'three copies wide', playerPixelWidth: 8,  copyCount: 3, copyOffsets: [0, 32, 64], note: '3 copies, medium spacing — ASM: no label for this value' },
+  { value: 0b111, asmName: 'QUAD_SIZE',     label: 'quad size',         playerPixelWidth: 32, copyCount: 1, copyOffsets: [0],         note: 'ASM line 162: QUAD_SIZE = %111 — TIA renders 4x width for this value' },
 ]);
 
 export function decodeNUSIZDetail(nusizValue) {
   const value = u8(nusizValue) & 0b111;
   const entry = NUSIZ_DETAIL_TABLE[value] ?? null;
-  if (!entry) return { value, asmName: null, label: 'unknown', playerPixelWidth: 8, copyCount: 1, note: 'Unrecognized NUSIZ value' };
+  if (!entry) return { value, asmName: null, label: 'unknown', playerPixelWidth: 8, copyCount: 1, copyOffsets: [0], note: 'Unrecognized NUSIZ value' };
   return { ...entry };
 }
 
@@ -2586,7 +2586,9 @@ export function inspectVisibleMissileCollision(memory) {
   const missile = inspectMissileBoundsState(memory);
   const scroll = inspectVisibleRiverScrollState(memory);
   const frameCnt = readByte(memory, ZERO_PAGE_INDEX.frameCnt.address);
-  const visibleLineRaw = GAME_CONSTANTS.NUM_LINES - missile.missileY;
+  // missileY is compared against lineNum, which counts up from the bottom (JET_Y = 19),
+  // the same frame as the slot bands below.
+  const visibleLineRaw = missile.missileY;
   const visibleLine = Math.max(0, Math.min(GAME_CONSTANTS.NUM_LINES - 1, visibleLineRaw));
   const compositeLine = visibleLine + scroll.pixelOffset;
   const slotIndex = Math.max(0, Math.min(scroll.currentSlots.length - 1, Math.floor(compositeLine / scroll.sliceLineSpan)));
@@ -2598,10 +2600,14 @@ export function inspectVisibleMissileCollision(memory) {
     GAME_CONSTANTS.NUM_LINES - 1,
     Math.ceil(((slotIndex + 1) * scroll.sliceLineSpan) - scroll.pixelOffset) - 1,
   );
+  const nusizDetail = decodeNUSIZDetail(slot?.state1?.nusiz ?? 0);
   const bboxLeft = slot ? slot.coarseX : 0;
-  const bboxRight = slot ? Math.min(159, bboxLeft + Math.max(0, (sprite?.width ?? 1) - 1)) : 0;
+  const bboxRight = slot ? Math.min(159, bboxLeft + nusizDetail.playerPixelWidth - 1) : 0;
   const supportsHit = !!slot && slot.shapeClass !== 'explosion' && slot.shapeClass !== 'unknown';
-  const xHit = supportsHit && missile.missileX >= bboxLeft && missile.missileX <= bboxRight;
+  const xHit = supportsHit && nusizDetail.copyOffsets.some((offset) => {
+    const copyLeft = bboxLeft + offset;
+    return missile.missileX >= copyLeft && missile.missileX <= copyLeft + nusizDetail.playerPixelWidth - 1;
+  });
   const yHit = supportsHit && visibleLine >= bandTop && visibleLine <= bandBottom;
   const hit = missile.isEnabled && missile.isWithinBounds && visibleLineRaw >= 0 && supportsHit && xHit && yHit;
   return {
@@ -3597,6 +3603,8 @@ export function stepVisibleGameplayLoop(memory, options = {}) {
 
     let missileEnabledAfter = readByte(memory, ZERO_PAGE_INDEX.missileFlag.address) === 0xff;
     if (missileEnabledAfter) {
+      // Difficulty B (default) is a guided missile: it keeps following playerX + 5.
+      setField(memory, 'missileX', Math.max(0, Math.min(159, readByte(memory, ZERO_PAGE_INDEX.playerX.address) + MISSILE_X_OFFSET)));
       let nextMissileY = missileYBefore + GAME_CONSTANTS.MISSILE_SPEED;
       if (nextMissileY > GAME_CONSTANTS.MAX_MISSILE) {
         nextMissileY = GAME_CONSTANTS.MAX_MISSILE;
@@ -3632,9 +3640,7 @@ export function stepVisibleGameplayLoop(memory, options = {}) {
       setField(memory, 'missileSound', 0x00);
       setField(memory, 'missileY', GAME_CONSTANTS.MAX_MISSILE);
       missileEnabledAfter = false;
-      scoreDelta = projectedMissileCollision.shapeId === SHAPE_IDS.ID_BRIDGE
-        ? SCORE_HARNESS_AWARDS.bridgeHit
-        : SCORE_HARNESS_AWARDS.missileHit;
+      scoreDelta = SCORE_TAB_POINTS[projectedMissileCollision.shapeId] ?? 0;
       scoreState = addVisibleScore(memory, scoreDelta);
       if (projectedMissileCollision.slot) {
         const explosionShapeId = (nextFrame & 1) ? SHAPE_IDS.ID_EXPLOSION2 : SHAPE_IDS.ID_EXPLOSION1;
@@ -3877,7 +3883,7 @@ export function fireVisibleMissile(memory) {
   const alreadyEnabled = missileFlagBefore === 0xff;
   const playerX = readByte(memory, ZERO_PAGE_INDEX.playerX.address);
   const missileXBefore = readByte(memory, ZERO_PAGE_INDEX.missileX.address);
-  const spawnX = Math.max(0, Math.min(159, playerX + 8));
+  const spawnX = Math.max(0, Math.min(159, playerX + MISSILE_X_OFFSET));
 
   if (!alreadyEnabled) {
     setField(memory, 'missileX', spawnX);

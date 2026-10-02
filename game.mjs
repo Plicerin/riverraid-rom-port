@@ -55,14 +55,13 @@ function drawBitmap(targetCtx, bitmap, centerX, centerY, color, options = {}) {
   const scaleX = options.scaleX ?? scale;
   const scaleY = options.scaleY ?? scale;
   const reflect = !!options.reflect;
-  const copies = options.copies ?? 1;
-  const spacing = options.spacing ?? Math.max(scaleX * 10, 18);
-  const width = bitmap[0].length * scaleX;
   const height = bitmap.length * scaleY;
-  const startX = centerX - (((copies - 1) * spacing) + width) / 2;
+  // With options.leftX, centerX is ignored and copies sit at options.copyOffsets (canvas px).
+  const startX = options.leftX ?? (centerX - (bitmap[0].length * scaleX) / 2);
+  const copyOffsets = options.copyOffsets ?? [0];
   targetCtx.fillStyle = color;
-  for (let copy = 0; copy < copies; copy += 1) {
-    const leftX = startX + copy * spacing;
+  for (const copyOffset of copyOffsets) {
+    const leftX = startX + copyOffset;
     for (let row = 0; row < bitmap.length; row += 1) {
       const bits = bitmap[row];
       if (options.rowColors?.[row]) targetCtx.fillStyle = options.rowColors[row];
@@ -148,19 +147,16 @@ function drawBlockText(text, x, y, options = {}) {
   }
 }
 
-function copiesForSlot(slot) {
-  if (slot?.state1?.nusiz >= 4 && slot.state1.nusiz <= 5) return 2;
-  if (slot?.state1?.nusiz === 6) return 3;
-  return 1;
-}
-
 // Object bitmaps are one scanline per row, so draw them at the playfield's
-// line/clock scale; NUSIZ stretches width only.
-function spriteScaleForSlot(slot) {
-  const sizeMult = slot?.state1?.nusiz >= 7 ? 4 : slot?.state1?.nusiz >= 5 ? 2 : 1;
+// line/clock scale. NUSIZ stretches width and places copies as the TIA does.
+function spriteLayoutForSlot(slot) {
+  const nusiz = visiblePort.decodeNUSIZDetail(slot?.state1?.nusiz ?? 0);
+  const clockPx = logicalWidth / 160;
   return {
-    scaleX: (logicalWidth / 160) * sizeMult,
+    scaleX: clockPx * (nusiz.playerPixelWidth / 8),
     scaleY: logicalHeight / visiblePort.GAME_CONSTANTS.NUM_LINES,
+    leftX: xToCanvas(slot.inspectX ?? slot.coarseX),
+    copyOffsets: nusiz.copyOffsets.map((offset) => offset * clockPx),
   };
 }
 
@@ -243,6 +239,9 @@ function resetToPlayableStart() {
   visiblePort.setField(memory, 'gameVariation', 0x00);
   visiblePort.setField(memory, 'level', 0x00);
   visiblePort.writeByte(memory, visiblePort.ZERO_PAGE_INDEX.livesPtr.address, 3);
+  // RESET-switch path: SetScorePtrs with A = <Zero (units '0', leading digits blank).
+  // applyVisibleResetLogic models first boot, which shows the game number '1' instead.
+  visiblePort.writeVisibleScoreDigits(memory, [0, 0, 0, 0, 0, 0]);
   visiblePort.advanceVisibleSlotScene(memory);
   const safePlayerX = computeSafePlayableSpawnX(80);
   visiblePort.setField(memory, 'playerX', safePlayerX);
@@ -451,15 +450,12 @@ function drawWorld() {
 
     if (!slot || slot.coarseX <= 0) return;
     const sprite = visiblePort.resolveVisibleSpriteVariant(slot.shapeId, frameCnt);
-    const clampedX = clamp(slot.inspectX ?? slot.coarseX, row.left + 4, row.right - 4);
-    const ox = xToCanvas(clampedX);
     const spriteOptions = {
-      ...spriteScaleForSlot(slot),
+      ...spriteLayoutForSlot(slot),
       reflect: slot.state1?.refp1Label === 'reflected',
-      copies: copiesForSlot(slot),
       rowColors: sprite.rowColors?.map(visiblePort.ntscColorCss),
     };
-    drawBitmap(ctx, sprite.bitmap, ox, centerY, shapeColor(slot.shapeId), spriteOptions);
+    drawBitmap(ctx, sprite.bitmap, 0, centerY, shapeColor(slot.shapeId), spriteOptions);
   });
 
   const playerX = visiblePort.getField(memory, 'playerX');
@@ -467,15 +463,15 @@ function drawWorld() {
   const jetBitmap = resolvePlayerJetBitmap(frameCnt, gameMode);
   const jetX = xToCanvas(playerBounds.clampedPlayerX);
   const jetY = logicalHeight - ((visiblePort.GAME_CONSTANTS.JET_Y / visiblePort.GAME_CONSTANTS.NUM_LINES) * logicalHeight);
-  drawBitmap(ctx, jetBitmap, jetX, jetY, visiblePort.ntscColorCss(visiblePort.COLORS.YELLOW), { scale: 3 });
+  drawBitmap(ctx, jetBitmap, jetX, jetY, visiblePort.ntscColorCss(visiblePort.COLORS.YELLOW), { scale: 3, leftX: jetX });
   if (playerBounds.collidedWithBank) {
     ctx.strokeStyle = visiblePort.ntscColorCss(visiblePort.COLORS.RED);
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(jetX - 10, jetY - 12);
-    ctx.lineTo(jetX + 10, jetY + 12);
-    ctx.moveTo(jetX + 10, jetY - 12);
-    ctx.lineTo(jetX - 10, jetY + 12);
+    ctx.moveTo(jetX + 2, jetY - 12);
+    ctx.lineTo(jetX + 22, jetY + 12);
+    ctx.moveTo(jetX + 22, jetY - 12);
+    ctx.lineTo(jetX + 2, jetY + 12);
     ctx.stroke();
   }
 
@@ -483,12 +479,9 @@ function drawWorld() {
   const missileY = visiblePort.getField(memory, 'missileY');
   const missileX = visiblePort.getField(memory, 'missileX');
   if (missileFlag === 0xff && missileY >= visiblePort.GAME_CONSTANTS.MIN_MISSILE) {
-    const missileProgress = (missileY - visiblePort.GAME_CONSTANTS.MIN_MISSILE) / (visiblePort.GAME_CONSTANTS.MAX_MISSILE - visiblePort.GAME_CONSTANTS.MIN_MISSILE);
-    const my = logicalHeight - 10 - (missileProgress * (logicalHeight - 20));
-    const missileRowIndex = clamp(Math.floor((my / logicalHeight) * rows.length), 0, Math.max(0, rows.length - 1));
-    const missileRow = rows[missileRowIndex] ?? rows[0] ?? { left: 0, right: 159 };
-    const clampedMissileX = clamp(missileX, missileRow.left + 2, missileRow.right - 2);
-    const mx = xToCanvas(clampedMissileX);
+    // Same frame as the model's hit test: missileY counts lines up from the bottom.
+    const my = logicalHeight - logicalYToCanvas(missileY);
+    const mx = xToCanvas(missileX);
     ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.RED);
     ctx.fillRect(Math.floor(mx - 2), Math.floor(my - 4), 4, 8);
   }
@@ -504,7 +497,7 @@ function sectionLabel(sectionBlock) {
 }
 
 function drawCanvasHud() {
-  const score = String(visiblePort.computeVisibleScore(memory)).padStart(6, '0');
+  const score = String(visiblePort.computeVisibleScore(memory));
   const fuelPct = Math.round(visiblePort.computeFuelPercent(memory));
   const lives = visiblePort.readByte(memory, visiblePort.ZERO_PAGE_INDEX.livesPtr.address);
   const section = sectionLabel(visiblePort.getField(memory, 'sectionBlock'));
@@ -566,7 +559,7 @@ function drawTitleScreen() {
 function drawGameOverScreen() {
   drawWorld();
   drawCanvasHud();
-  const score = String(visiblePort.computeVisibleScore(memory)).padStart(6, '0');
+  const score = String(visiblePort.computeVisibleScore(memory));
   drawCenteredText([
     { text: 'GAME OVER', yOffset: -70, scale: 7, color: '#ff6b6b' },
     { text: `SCORE ${score}`, yOffset: -8, scale: 4, color: '#ffd166' },
@@ -590,7 +583,7 @@ function renderHud() {
       : lastStep?.missileHit
         ? ` · hit ${lastStep.projectedMissileCollision?.shapeName ?? 'target'}`
         : '';
-  scoreEl.textContent = String(score).padStart(6, '0');
+  scoreEl.textContent = String(score);
   fuelEl.textContent = `${fuelPct}%`;
   livesEl.textContent = String(lives);
   sectionEl.textContent = sectionLabel(sectionBlock);
