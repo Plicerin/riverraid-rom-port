@@ -340,16 +340,12 @@ function buildTerrainRows(rows, targetBands = 48) {
 }
 
 function drawBackground(rows) {
-  ctx.fillStyle = '#1b5e20';
+  // Banks are PF in GREEN (bright variant: | PF_COLOR_FLAG); water is COLUBK = BLUE.
+  ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.GREEN | visiblePort.FLAGS.blockLst.PF_COLOR_FLAG);
   ctx.fillRect(0, 0, logicalWidth, logicalHeight);
 
   const terrainRows = buildTerrainRows(rows);
-  const waterGradient = ctx.createLinearGradient(0, 0, 0, logicalHeight);
-  waterGradient.addColorStop(0, '#0f5fa8');
-  waterGradient.addColorStop(0.45, '#1383d1');
-  waterGradient.addColorStop(1, '#0a4f8a');
-
-  ctx.fillStyle = waterGradient;
+  ctx.fillStyle = visiblePort.ntscColorCss(visiblePort.COLORS.BLUE);
   ctx.beginPath();
   terrainRows.forEach((row, index) => {
     const left = xToCanvas(row.left);
