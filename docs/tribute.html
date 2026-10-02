@@ -1,0 +1,288 @@
+<title>River Raid, Rebuilt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: a narrow reading column beside one bold element, the generated
+     river flowing past like the game's own scroll. Single dark look: the
+     palette is River Raid's TIA colors under a night sky. */
+  :root {
+    --night: #0a0d26;        /* page ground, the river's blue pushed to night */
+    --night-2: #12173a;      /* raised surfaces */
+    --river: #2d32b8;        /* TIA $84, the water */
+    --bank: #6e9c42;         /* TIA $D6, bright banks */
+    --bank-dark: #355f18;    /* TIA $D2, dark banks */
+    --jet: #e8e84a;          /* TIA $1C, the jet and the score */
+    --fuel: #d65c5c;         /* TIA $48, the fuel depot's red */
+    --road: #8e8e8e;         /* TIA $06, the status bar grey */
+    --ink: #e8eaf6;
+    --ink-soft: #a9aed4;
+    --rule: #262c5c;
+    --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+    --body: "Literata", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--ink);
+    font: 400 1.05rem/1.7 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  img.px { image-rendering: pixelated; image-rendering: crisp-edges; }
+  a { color: var(--jet); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--jet); outline-offset: 3px; }
+
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 40rem) minmax(0, 1fr);
+    padding-inline: 20px;
+  }
+  .flow {
+    grid-column: 1;
+    justify-self: end;
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    height: 100vh;
+    width: 316px;
+    margin-right: 48px;
+    overflow: hidden;
+    border-inline: 6px solid #000;
+    background-color: var(--river);
+    background-image: url(data:image/png;base64,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);
+    background-repeat: repeat-y;
+    background-size: 304px auto;
+    background-position: 0 0;
+    animation: flow 70s linear infinite;
+  }
+  .flow .jet {
+    position: absolute;
+    left: 50%;
+    bottom: 14%;
+    width: 16px;
+    transform: translateX(-50%);
+  }
+  @keyframes flow { from { background-position-y: 0; } to { background-position-y: 2268px; } }
+  @media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+
+  main { grid-column: 2; min-width: 0; padding-block: 72px 40px; }
+
+  .kicker {
+    font: 600 0.78rem/1.2 var(--mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    margin: 14px 0 6px;
+    font: 900 clamp(4.2rem, 13vw, 8.4rem)/0.82 var(--display);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--jet);
+    text-wrap: balance;
+  }
+  h1 span { display: block; color: var(--ink); }
+  .byline { margin: 18px 0 0; font-style: italic; color: var(--ink-soft); }
+  h2 {
+    margin: 0 0 18px;
+    font: 700 2.4rem/1 var(--display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  h2 .addr { font: 600 0.82rem/1 var(--mono); letter-spacing: 0.06em; color: var(--ink-soft); vertical-align: middle; margin-left: 10px; }
+  p { margin: 0 0 1em; max-width: 62ch; }
+  section { padding-block: 64px 8px; border-top: 1px solid var(--rule); margin-top: 56px; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; color: var(--jet); }
+
+  .screen {
+    margin: 44px 0 0;
+    padding: 18px;
+    background: #000;
+    border-radius: 14px;
+    box-shadow: 0 0 0 1px #1b2050, 0 30px 80px -30px #2d32b8;
+  }
+  .screen img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 320 / 199; }
+  .screen figcaption { margin-top: 12px; font: 400 0.8rem/1.5 var(--mono); color: var(--ink-soft); }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px;
+    margin: 32px 0 28px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .facts div { background: var(--night); padding: 16px 16px 14px; }
+  .facts b { display: block; font: 900 2.3rem/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .facts span { display: block; margin-top: 6px; font: 400 0.82rem/1.4 var(--body); color: var(--ink-soft); }
+
+  .bridge { margin: 28px 0 8px; }
+  .bridge img { display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 304 / 44; }
+  .bridge figcaption { margin-top: 10px; font: 400 0.8rem/1.5 var(--mono); color: var(--ink-soft); }
+
+  .bestiary { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 28px 24px; margin-top: 28px; }
+  .creature { display: grid; grid-template-rows: 110px auto; gap: 12px; min-width: 0; }
+  .creature .plate {
+    display: grid; place-items: center;
+    background: var(--river);
+    border-radius: 3px;
+  }
+  .creature.land .plate { background: var(--bank); }
+  .creature img { max-width: 100%; }
+  .creature h3 { margin: 0; font: 700 1.35rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.03em; display: flex; justify-content: space-between; gap: 8px; }
+  .creature h3 .pts { font: 600 0.86rem/1.5 var(--mono); color: var(--jet); }
+  .creature p { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink-soft); }
+
+  blockquote {
+    margin: 30px 0;
+    padding: 0 0 0 22px;
+    border-left: 4px solid var(--fuel);
+    font: 400 1.25rem/1.55 var(--body);
+    font-style: italic;
+  }
+
+  .log { list-style: none; margin: 30px 0 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+  .log li {
+    display: grid;
+    grid-template-columns: 4.6rem minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .log li:first-child { border-top: 0; }
+  .log .hash { font: 600 0.8rem/1.9 var(--mono); color: var(--jet); }
+  .log b { display: block; font: 700 1.2rem/1.3 var(--display); text-transform: uppercase; letter-spacing: 0.03em; }
+  .log span { display: block; font-size: 0.92rem; line-height: 1.55; color: var(--ink-soft); }
+
+  .proof { width: 100%; border-collapse: collapse; margin: 26px 0 8px; font-size: 0.92rem; }
+  .proof-wrap { overflow-x: auto; }
+  .proof th, .proof td { text-align: left; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .proof th { font: 600 0.72rem/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+  .proof td.n { font: 600 0.9rem/1.5 var(--mono); color: var(--jet); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  footer { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 0.86rem; color: var(--ink-soft); }
+  footer p { max-width: none; }
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: minmax(0, 1fr); padding-inline: 16px; }
+    .flow {
+      grid-column: 1; grid-row: 1;
+      position: relative; justify-self: stretch;
+      width: auto; height: 180px; margin: 16px 0 0;
+      border: 6px solid #000; border-radius: 10px;
+      background-size: 304px auto;
+      background-position-x: center;
+    }
+    main { grid-column: 1; padding-block: 36px 24px; }
+  }
+</style>
+
+<div class="page">
+  <div class="flow" aria-hidden="true"><img class="px jet" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAANCAYAAACgu+4kAAAAUUlEQVR4nGNgIABevPD6D8K45JkYKARMlBrAiEsCl7MlJLYx4jXgBR7/YjOIkVSN9AtECYltjMj+RefDAAs2jfhshMkT7eUXBBLSwEcjxYEIAHc8K7BMnaSeAAAAAElFTkSuQmCC" alt=""></div>
+
+  <main>
+    <div class="kicker">Atari 2600 &middot; 1982 &middot; 4 KB cartridge</div>
+    <h1>River <span>Raid</span></h1>
+    <p class="byline">Designed and programmed by Carol Shaw. A tribute, and the story of rebuilding it instruction by instruction.</p>
+
+    <figure class="screen">
+      <img class="px" src="data:image/png;base64,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" alt="River Raid's opening screen: a straight blue river between green banks, a helicopter, a fuel depot and a ship ahead, a house on the left bank, the yellow jet on the road, and the grey status bar with score, fuel gauge and the Activision logo.">
+      <figcaption>The first frame after RESET, drawn by the port. It matches a Stella capture pixel for pixel, all 31,840 of them.</figcaption>
+    </figure>
+
+    <section aria-labelledby="h-river">
+      <h2 id="h-river">A river from sixteen bits</h2>
+      <p>The river in River Raid is never stored. There isn't room: the whole game, code and graphics, fits in a 4,096-byte cartridge. Instead, every stretch of river is built just before it scrolls onto the screen, from a 16-bit random number generator that starts from the same seed, <code>$A814</code>, every game. That is why the river is endless and why it is the same river every time you play.</p>
+      <p>Each piece of river is a block 32 scanlines tall. The generator picks the next bank shape from fifteen patterns, decides whether an island begins or ends, and drops one object into it: a ship, a helicopter, later a jet, a fuel depot, or a house on the bank. Thirty-two blocks make a section, and every section ends with a road and a bridge. Odd-numbered sections run straight; even ones wind.</p>
+
+      <div class="facts">
+        <div><b>4,096</b><span>bytes for the whole game</span></div>
+        <div><b>15</b><span>bank patterns</span></div>
+        <div><b>48</b><span>difficulty levels</span></div>
+        <div><b>32</b><span>scanlines per river block</span></div>
+      </div>
+
+      <figure class="bridge">
+        <img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATAAAAAsCAIAAABt+nPwAAAByElEQVR4nO3dsUvDQBTH8asEcVEEkbp06xo3F7PpooI4Ouri0Ekc/Dscs/oXCOKgixYq+QuyumWJSCnoIi66aShGwZx57+6+n6kNoXmEe/xySbh21g5WDOx5zc+dPp1z8aHx1+Bk99d90rMrI2dG8NgApkTTG4DwUrFu//bTkoQEFCEh4bm0knL655A0JAKSVppt6bH8/Dzuarm1ySUroAgJiUCN1aRiFQkJKEJDAorQkIAiNCSgCA0JKEJDAorQkIAiNCSgCA0JKBKtL+5L1+CVO+M2xoMsEhJQhHdZW7L3tvXt9svZGy+Pi7+hIVtqAFv721J33Bdz3Hot+BIlSVL5iqYeuhdOn8TVPuNBEnNIQBEuWS0rimfjsn5fuoKwkZCAIiSkZb3egu2fREBISEAREtIy5pBogoQEFOmU5Y50DV7J8yfjsjheli4haCQkoEg0Gvn892PtGw6PjMsmk1PpEoJGQgKKcJfVMp5DogkSElCEhLSM55BogoQEFCEhLWMOiSZISECRKMsy6Rq8Mn9bGJdlm4wHSVyyWla3eJQri1xtmOt/rQc/oyFbIrXKG6vLuYU5JKBI9B7n0jX45X7buIzxYER9AE6QUjekqSckAAAAAElFTkSuQmCC" alt="A grey road with a yellow centre line crossing the river, with the brown bridge over the water.">
+        <figcaption>The end of section one. Shooting the bridge is worth 500 points and starts the next section; flying into it costs a life.</figcaption>
+      </figure>
+
+      <p>The band of river on this page is the generator's output for the first three sections, rendered block by block by the port: the straight first section, its bridge, then the winding second one with its islands.</p>
+    </section>
+
+    <section aria-labelledby="h-things">
+      <h2 id="h-things">Everything on the river</h2>
+      <p>Every object is a single 8-pixel-wide player sprite, drawn on alternating scanlines from two tables so it gets full vertical detail. Point values come straight from the cartridge's score table.</p>
+
+      <div class="bestiary">
+        <div class="creature">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAICAYAAACRbl3VAAAASklEQVR42mNkIB/8R+MzMlABMDEMMsBCQYjQBDDS0AGMFGlabCn6fyCjKvb4a0ZSo4wmDsAZQiELjtI0hNYkWDNSFM/UdiCxDgIAIqoRH1vowRgAAAAASUVORK5CYII=" alt="Ship sprite" width="108" height="24"></div>
+          <div><h3>Tanker <span class="pts">30</span></h3><p>Starts moving at random and patrols, turning back when it touches a bank. Where the river is too narrow for a ship, the cartridge swaps it for a helicopter.</p></div>
+        </div>
+        <div class="creature">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAKCAYAAAC9vt6cAAAAUUlEQVR42mNkIBJcWuL1H5s4I6ka9GK2MTKQAy4t8fqPzVDCpjkYYHUJw4ELjBADYAqgAgQ1Yrpgyn8GCgATA4UAtxeIDAPigYPBf2yGURwLAL3bISfYOd3uAAAAAElFTkSuQmCC" alt="Helicopter sprite" width="48" height="30"></div>
+          <div><h3>Helicopter <span class="pts">60</span></h3><p>The rotor is two alternating shapes, swapped every other frame. Patrols like the ship.</p></div>
+        </div>
+        <div class="creature">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAGCAYAAADKfB7nAAAAS0lEQVR42mMobfjwv7Thw38GMgEjuubuBgFGbApxqWMs3fqebNsZGBgY4LbBDOr2FkRxASELMJxbeuY1Vg3dJqJYvcZCyIm4NMIAALUqHNbmyikhAAAAAElFTkSuQmCC" alt="Jet fighter sprite" width="48" height="18"></div>
+          <div><h3>Jet <span class="pts">100</span></h3><p>Appears from level three on, crosses the whole screen without stopping and wraps around at the edge.</p></div>
+        </div>
+        <div class="creature">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAYCAYAAADzoH0MAAAAgUlEQVR42r1TwQ3AIAiEhmluJufpJM7EOvZTE2OkolbvRwQ54I7phYaQyAHEyGXMdWGdYDXIeWJ18jK6vqhabErsY+AFq2qaKQTATQYAOD+24t9HWP5AejMOfzC6VKH7phkp7xfSMSmL1/fuHXg7m17I9++d0/TCcSmf84K1k2UvPNbPQVkL285QAAAAAElFTkSuQmCC" alt="Fuel depot sprite" width="48" height="72"></div>
+          <div><h3>Fuel <span class="pts">80</span></h3><p>Fly over it to refuel. Shoot it and you lose the fuel but gain the points. Higher levels place fewer depots.</p></div>
+        </div>
+        <div class="creature land">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAATCAYAAAD4f6+NAAAAhUlEQVR42mNkIB78ZyANMDKQARip6ACqOJCRhg4gy4EsMMa1a9fo6hotLS0GvA7CogHFB9euXftPTXlcgIlhkAFGUn1AxShjZBgFtCobyAHzLqSiJIEkg9mMQzJRMw3bKEOPIkIAVxQOnxAiNUSIDbHRNEQoDdGsHPLwQG3O7NjBMDTLIQDZYykeynFJIAAAAABJRU5ErkJggg==" alt="House and tree sprite" width="108" height="57"></div>
+          <div><h3>House <span class="pts">0</span></h3><p>Scenery on the banks and islands. The only object on the river that scores nothing when you shoot it.</p></div>
+        </div>
+        <div class="creature">
+          <div class="plate"><img class="px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAANCAYAAACgu+4kAAAAUUlEQVR4nGNgIABevPD6D8K45JkYKARMlBrAiEsCl7MlJLYx4jXgBR7/YjOIkVSN9AtECYltjMj+RefDAAs2jfhshMkT7eUXBBLSwEcjxYEIAHc8K7BMnaSeAAAAAElFTkSuQmCC" alt="The player's jet" width="48" height="39"></div>
+          <div><h3>You <span class="pts">+1 life / 10,000</span></h3><p>Push up to speed up, pull back to slow down. The fuel gauge drains the whole time.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-shaw">
+      <h2 id="h-shaw">Carol Shaw</h2>
+      <p>Carol Shaw was one of the first women to design and program video games professionally. At Atari she wrote <i>3-D Tic-Tac-Toe</i> and <i>Video Checkers</i> for the 2600. At Activision she made <i>River Raid</i>, released in 1982 and one of the best-loved games on the system.</p>
+      <p>Reading the code, the craft shows in the details: the river's banks and the objects share a single random stream, so the same seed rebuilds the same world. The score lives directly in the pointers to the digit graphics. And the kernel checks collisions with the TIA's hardware latches once per block, so there is no collision arithmetic at all.</p>
+    </section>
+
+    <section aria-labelledby="h-port">
+      <h2 id="h-port">Rebuilding it <span class="addr">$F000–$FFFF</span></h2>
+      <p>This browser port does not emulate the Atari. It is a translation: each 6502 routine of the cartridge rewritten in JavaScript, one instruction per line, working on the same 128 bytes of RAM at the same addresses. To prove each translation correct, a small 6502 interpreter runs the real cartridge next to it, and every frame is compared byte for byte.</p>
+
+      <ol class="log">
+        <li><span class="hash">ac9915a</span><div><b>Sprites from the cartridge</b><span>Ships, helicopters and depots drawn from the ROM's interlaced tables.</span></div></li>
+        <li><span class="hash">f097984</span><div><b>Colors per scanline</b><span>Each sprite line takes its color from the ROM's color tables, the way the kernel sets it.</span></div></li>
+        <li><span class="hash">adfd263</span><div><b>Stella's palette</b><span>Color bytes looked up in Stella's standard NTSC palette.</span></div></li>
+        <li><span class="hash">7a52c8d</span><div><b>Missile and score</b><span>A guided missile fired from the jet's nose, and the cartridge's point values.</span></div></li>
+        <li><span class="hash">1b101a5</span><div><b>The river, the kernel and the game loop</b><span>River generator, playfield, collisions and frame logic, all ported from the ROM.</span></div></li>
+        <li><span class="hash">24d32a4</span><div><b>The Atari's pixel shape</b><span>Pixels twice as wide as they are tall, as on a TV.</span></div></li>
+        <li><span class="hash">56bcd66</span><div><b>The status bar</b><span>Score, fuel gauge, lives and the scrolling copyright, from the status kernel.</span></div></li>
+        <li><span class="hash">dab7c1c</span><div><b>Sound</b><span>The cartridge's sound registers played through a model of the TIA sound chip.</span></div></li>
+      </ol>
+
+      <div class="proof-wrap">
+        <table class="proof">
+          <thead><tr><th>Checked against the cartridge</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>River generator, state by state, levels 1 to 48</td><td class="n">300,000 frames, 0 differences</td></tr>
+            <tr><td>Playfield, every pixel of all 160 lines</td><td class="n">14,500 frames, 0 differences</td></tr>
+            <tr><td>Whole frames with crashes, refuels, hits, game overs, 1 and 2 players</td><td class="n">45,000 frames, 0 differences</td></tr>
+            <tr><td>Status bar against the cartridge's own output</td><td class="n">2,529 frames, 0 differences</td></tr>
+            <tr><td>Start screen against a Stella capture</td><td class="n">31,840 pixels, 0 differences</td></tr>
+            <tr><td>Missile tone, AUDC <code>$0C</code>, AUDF <code>$10</code></td><td class="n">308 Hz measured, 307.8 Hz expected</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <p>A fan tribute. <i>River Raid</i> &copy; 1982 Activision, designed and programmed by Carol Shaw. The port was built with the help of Thomas Jentzsch's 2001 disassembly and is colored with Stella's NTSC palette. Every image on this page was rendered by the port. No cartridge code or data is included.</p>
+    </footer>
+  </main>
+</div>
