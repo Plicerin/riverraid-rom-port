@@ -14,6 +14,7 @@ import {
 } from './riverraidRiver.mjs';
 import { COLOR_TAB, ANIMATE_ID_TAB, SCORE_TAB, VOLUME_TAB, JET_PAGE_TAIL, PF_PAGE_FC } from './riverraidPlayfieldData.mjs';
 import { KERNEL_SHAPE_BYTES } from './riverraidKernelSprites.mjs';
+import { statusLines } from './riverraidStatus.mjs';
 
 export const Z = Object.freeze({
   ...RIVER_ZP,
@@ -726,6 +727,7 @@ export function runFrame(mem, io) {
   preKernel(mem, io);
   const display = kernel(mem);
   statusTail(mem);
+  display.status = statusLines(mem); // drawn by DisplayState before the frame logic runs
   const result = frameLogic(mem, io);
   return { ...result, display };
 }

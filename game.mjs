@@ -1,6 +1,7 @@
 import { romReset, runFrame, Z, LOW } from './riverraidFrame.mjs';
 import { NTSC_PALETTE_RGB } from './riverraidVisiblePort.mjs';
 import { KERNEL_LINES } from './riverraidRiver.mjs';
+import { statusLinePixels } from './riverraidStatus.mjs';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -15,11 +16,9 @@ const debugEl = document.getElementById('debug');
 
 const logicalWidth = canvas.width;
 const logicalHeight = canvas.height;
-// HUD band on top, then the 160-line kernel at Stella's pixel aspect:
-// 4 canvas px per color clock, 2 per scanline (Atari pixels are twice as wide as tall)
-const HUD_HEIGHT = 42;
-const PIXEL_W = logicalWidth / 160;
-const LINE_H = (logicalHeight - HUD_HEIGHT) / KERNEL_LINES;
+// The 160-line kernel, one more playfield line, then the ROM's status display,
+// at Stella's pixel aspect: 4 canvas px per color clock, 2 per scanline.
+const SCREEN_LINES = KERNEL_LINES + 1 + 38;
 const SCREEN_TITLE = 'title';
 const SCREEN_PLAYING = 'playing';
 const SCREEN_GAME_OVER = 'game-over';
@@ -40,9 +39,9 @@ let accumulatorMs = 0;
 // 160x160 kernel image, scaled to the canvas
 const screen = document.createElement('canvas');
 screen.width = 160;
-screen.height = KERNEL_LINES;
+screen.height = SCREEN_LINES;
 const screenCtx = screen.getContext('2d');
-const screenImage = screenCtx.createImageData(160, KERNEL_LINES);
+const screenImage = screenCtx.createImageData(160, SCREEN_LINES);
 
 const BLOCK_GLYPHS = Object.freeze({
   '0': ['111','101','101','101','111'],
@@ -184,49 +183,38 @@ function pressReset() {
 
 function drawKernel() {
   if (!display) return;
-  const { pf, objs, masks, ssXor, ssMask } = display;
+  const { pf, objs, masks, ssXor, ssMask, status } = display;
   const tint = (c) => ((c ^ ssXor) & ssMask) >> 1;
   const bg = (io.colubk ?? 0x84) >> 1;
   const p0 = (io.colup0 ?? 0x1c) >> 1;
   const data = screenImage.data;
+  const put = (s, x, index) => {
+    const rgb = x < 8 ? 0 : NTSC_PALETTE_RGB[index]; // HMOVE every line blanks the first 8 pixels
+    const o = (s * 160 + x) * 4;
+    data[o] = rgb >> 16;
+    data[o + 1] = (rgb >> 8) & 0xff;
+    data[o + 2] = rgb & 0xff;
+    data[o + 3] = 255;
+  };
   for (let s = 0; s < KERNEL_LINES; s += 1) {
     const pfColor = tint(pf[s].colupf);
     const p1Color = tint(objs[s].colup1);
     const m = masks[s];
     for (let x = 0; x < 160; x += 1) {
-      // HMOVE every line blanks the first 8 pixels; TIA priority P0/M0 > P1 > PF > BK
-      let rgb = 0;
-      if (x >= 8) {
-        const index = (m.p0[x] || m.m0[x]) ? p0 : m.p1[x] ? p1Color : m.pf[x] ? pfColor : bg;
-        rgb = NTSC_PALETTE_RGB[index];
-      }
-      const o = (s * 160 + x) * 4;
-      data[o] = rgb >> 16;
-      data[o + 1] = (rgb >> 8) & 0xff;
-      data[o + 2] = rgb & 0xff;
-      data[o + 3] = 255;
+      // TIA priority: P0/M0 > P1 > PF > BK
+      put(s, x, (m.p0[x] || m.m0[x]) ? p0 : m.p1[x] ? p1Color : m.pf[x] ? pfColor : bg);
     }
   }
+  // the kernel's last playfield line shows once more while DisplayState starts
+  const lastPf = masks[KERNEL_LINES - 1].pf, lastColor = tint(pf[KERNEL_LINES - 1].colupf);
+  for (let x = 0; x < 160; x += 1) put(KERNEL_LINES, x, lastPf[x] ? lastColor : bg);
+  status.forEach((line, i) => {
+    const row = statusLinePixels(line);
+    for (let x = 0; x < 160; x += 1) put(KERNEL_LINES + 1 + i, x, row[x] >> 1);
+  });
   screenCtx.putImageData(screenImage, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(screen, 0, HUD_HEIGHT, 160 * PIXEL_W, KERNEL_LINES * LINE_H);
-}
-
-function drawCanvasHud() {
-  const fuelPct = fuelPercent();
-  const fuelBarWidth = Math.max(0, Math.min(102, Math.round((fuelPct / 100) * 102)));
-  ctx.save();
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, logicalWidth, HUD_HEIGHT);
-  drawBlockText(scoreText(), 14, 13, { scale: 3, color: '#ffd166' });
-  drawBlockText(`LIVES ${livesCount()}`, 116, 13, { scale: 3, color: '#e8f0ff' });
-  drawBlockText(`SEC ${memory[Z.level]}`, 238, 13, { scale: 3, color: '#e8f0ff' });
-  ctx.strokeStyle = '#e8f0ff';
-  ctx.strokeRect(logicalWidth - 128, 12, 104, 18);
-  ctx.fillStyle = fuelPct <= 25 ? '#ff6b6b' : '#5cc8ff';
-  ctx.fillRect(logicalWidth - 127, 13, fuelBarWidth, 16);
-  drawBlockText('FUEL', logicalWidth - 138, 15, { scale: 2, color: '#e8f0ff', align: 'right' });
-  ctx.restore();
+  ctx.drawImage(screen, 0, 0, logicalWidth, logicalHeight);
 }
 
 function drawCenteredText(lines) {
@@ -260,7 +248,6 @@ function render() {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, logicalWidth, logicalHeight);
   drawKernel();
-  drawCanvasHud();
   if (screenState === SCREEN_TITLE) {
     drawCenteredText([
       { text: 'RIVER RAID', yOffset: -88, scale: 8, color: '#ffd166' },

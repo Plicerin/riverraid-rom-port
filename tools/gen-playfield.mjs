@@ -31,7 +31,8 @@ const tables = {
   SCORE_TAB: [0xfe53, 11, 'score per shape id (DIGIT_H multiples, bit 7 = hundreds)'],
   VOLUME_TAB: [0xffbe, 4, 'jet sound volume by up/down (shares bytes with EnemyIdTab)'],
   JET_PAGE_TAIL: [0xfcbc, 0x36, 'page $FC bytes from JetStraight; shapePtr0 = <JetX-1 indexes from here'],
-  DIGITS: [0xfb00, 0x59, 'score/lives digit graphics Zero..Space and the first Copyright byte'],
+  DIGITS: [0xfb00, 0xb8, 'digit graphics Zero..Space and Copyright0..5, indexed by pointer low byte + Y'],
+  FUEL_TABS: [0xfe00, 0x57, 'FuelTab0..4 gauge graphics and ENABLTab ($FE48), read with Y = 0..14'],
 };
 
 const out = [
