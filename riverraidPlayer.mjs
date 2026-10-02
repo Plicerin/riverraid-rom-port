@@ -1,4 +1,4 @@
-// Playable River Raid for the tribute page: the ROM port (riverraidFrame.mjs)
+// Playable River Raid for the site and the tribute page: the ROM port (riverraidFrame.mjs)
 // on a canvas, keyboard input while the game has focus, a gamepad, touch
 // buttons on phones, and the TIA sound worklet. Mount with mountPlayer(rootElement).
 

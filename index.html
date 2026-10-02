@@ -3,178 +3,343 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>River Raid Port</title>
+  <title>River Raid — Activision, 1982</title>
+  <meta name="description" content="A browser port of Carol Shaw's River Raid for the Atari 2600, rebuilt from the original ROM instruction by instruction and checked against the real cartridge frame by frame.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232d32b8'/%3E%3Crect width='4' height='16' fill='%236e9c42'/%3E%3Crect x='12' width='4' height='16' fill='%236e9c42'/%3E%3Cpath d='M8 4l1 3 3 2v1H9l-.5 2H10v1H6v-1h1.5L7 10H4V9l3-2z' fill='%23e8e84a'/%3E%3C/svg%3E">
   <style>
+    /* Same landing-page system as the Dracula port, in River Raid's TIA colors. */
     :root {
+      --lp-night: #06081a;
+      --lp-panel: #0f1233;
+      --lp-panel-2: #0a0c24;
+      --lp-line: #1f2452;
+      --lp-line-2: #2d3470;
+      --lp-ink: #e7e9f4;
+      --lp-ink-2: #a5aad0;
+      --lp-ink-3: #6c7199;
+      --lp-accent: #e8e84a;    /* the jet, TIA $1C */
+      --lp-accent-2: #f4f47a;
+      --lp-river: #2d32b8;     /* TIA $84 */
+      --lp-bank: #6e9c42;      /* TIA $D6 */
+      --lp-bank-dark: #355f18; /* TIA $D2 */
+      --lp-road: #8e8e8e;      /* TIA $06 */
+      --lp-fuel: #d65c5c;      /* TIA $48 */
+      --lp-link: #9aa2ff;
       color-scheme: dark;
-      --bg: #06111d;
-      --panel: #0d1b2a;
-      --panel2: #13253a;
-      --fg: #e8f0ff;
-      --muted: #8fa6c1;
-      --accent: #5cc8ff;
-      --accent2: #ffd166;
-      --danger: #ff6b6b;
-      --border: rgba(255,255,255,0.12);
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      background: radial-gradient(circle at top, #10253b, var(--bg) 55%);
-      color: var(--fg);
-      font: 14px/1.4 system-ui, sans-serif;
-      min-height: 100vh;
+      background: radial-gradient(120% 70% at 50% -10%, #141a52 0%, transparent 60%), var(--lp-night);
+      color: var(--lp-ink-2);
+      font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 0 16px;
       display: flex;
-      justify-content: center;
-      padding: 24px;
+      flex-direction: column;
+      align-items: center;
     }
-    .shell {
-      width: min(1100px, 100%);
-      display: grid;
-      grid-template-columns: minmax(360px, 700px) minmax(260px, 1fr);
-      gap: 20px;
-      align-items: start;
+    main { width: min(1120px, 100%); }
+    .lp-mono, code, kbd { font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace; }
+    code { color: var(--lp-ink); }
+    a { color: var(--lp-link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--lp-accent); outline-offset: 3px; }
+    kbd {
+      display: inline-block; min-width: 1.5em; padding: 1px 6px; text-align: center;
+      border: 1px solid #353c7a; border-bottom-width: 3px; border-radius: 5px;
+      background: #151a45; color: var(--lp-ink); font-size: 11px; line-height: 1.5;
     }
-    .panel {
-      background: color-mix(in srgb, var(--panel) 92%, black);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-      overflow: hidden;
+
+    .lp-hero { padding: 40px 0 26px; text-align: center; }
+    .lp-stripes { display: grid; gap: 4px; margin: 0 auto 24px; max-width: 460px; }
+    .lp-stripes span { display: block; height: 5px; border-radius: 3px; opacity: 0.9; }
+    .lp-hero h1 {
+      font-size: clamp(38px, 11vw, 92px); line-height: 0.92; margin: 0; color: #fff; font-weight: 800;
+      letter-spacing: clamp(2px, 1.4vw, 14px); text-transform: uppercase; text-indent: clamp(2px, 1.4vw, 14px);
+      text-shadow: 0 2px 0 #1a1e70, 0 0 46px rgba(45, 50, 184, 0.65);
     }
-    .game-wrap {
-      padding: 16px;
+    .lp-hero .lp-year { margin-top: 14px; font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: var(--lp-ink-3); }
+    .lp-hero .lp-sub { margin: 18px auto 0; max-width: 620px; font-size: 16px; line-height: 1.6; }
+    .lp-hero .lp-sub b { color: var(--lp-ink); font-weight: 600; }
+    .lp-cta { display: flex; justify-content: center; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .lp-btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 999px;
+      font-weight: 600; font-size: 14px; border: 1px solid var(--lp-line-2); background: var(--lp-panel);
+      color: var(--lp-ink); cursor: pointer; font-family: inherit; transition: transform 0.12s, background 0.12s, border-color 0.12s;
     }
-    .hud {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+    .lp-btn:hover { transform: translateY(-1px); border-color: #3e4690; text-decoration: none; }
+    .lp-btn.primary { background: var(--lp-accent); border-color: #9a9a24; color: #0b0d2a; }
+    .lp-btn.primary:hover { background: var(--lp-accent-2); }
+    .lp-btn svg { width: 15px; height: 15px; }
+
+    .canvas-shell {
+      width: min(760px, 100%); margin: 0 auto; padding: 18px; border: 1px solid #272d66; border-radius: 20px;
+      background: linear-gradient(180deg, #151a45 0%, #090b22 100%);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
-    .stat {
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
+    .canvas-shell:fullscreen { width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .canvas-shell:fullscreen .tv { width: min(100%, calc((100vh - 80px) * 640 / 398)); }
+    .tv { position: relative; }
+    .tv canvas, .poster img {
+      display: block; width: 100%; height: auto; aspect-ratio: 640 / 398;
+      image-rendering: pixelated; image-rendering: crisp-edges;
     }
-    .stat .label {
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .tv canvas { border-radius: 6px; border: 1px solid #000; box-shadow: 0 0 0 2px #1f2452, inset 0 0 40px rgba(0, 0, 0, 0.8); background: #000; outline: none; }
+    .tv canvas:focus-visible { box-shadow: 0 0 0 2px var(--lp-accent); }
+    .poster { position: absolute; inset: 0; display: grid; place-items: center; }
+    .poster[hidden] { display: none; }
+    .poster img { position: absolute; inset: 0; height: 100%; border-radius: 6px; }
+    .poster .lp-btn { position: relative; font-size: 16px; padding: 13px 26px; box-shadow: 0 14px 30px -6px #000; }
+    #status-line { margin-top: 14px; font-size: 10px; color: var(--lp-ink-3); letter-spacing: 1px; text-align: center; line-height: 1.9; text-transform: uppercase; font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace; }
+
+    #tc { display: none; justify-content: space-between; align-items: center; width: 340px; max-width: 100%; margin: 14px auto 0; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 48px); gap: 4px; }
+    .dpad button, .fire { font: 700 18px/1 ui-sans-serif, system-ui, sans-serif; color: var(--lp-ink); background: var(--lp-panel); border: 1px solid var(--lp-line-2); border-radius: 8px; touch-action: none; }
+    .dpad [data-hold="up"] { grid-area: 1 / 2; }
+    .dpad [data-hold="left"] { grid-area: 2 / 1; }
+    .dpad [data-hold="right"] { grid-area: 2 / 3; }
+    .dpad [data-hold="down"] { grid-area: 3 / 2; }
+    .fire { width: 92px; height: 92px; border-radius: 50%; background: var(--lp-fuel); border-color: #8f2d2d; color: #fff; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+    @media (pointer: coarse) { #tc { display: flex; } }
+
+    .lp-tray { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; width: min(760px, 100%); margin: 14px auto 0; padding: 0 4px; font-size: 12px; color: var(--lp-ink-3); }
+    .lp-tray .switches { display: flex; flex-wrap: wrap; gap: 8px; }
+    .lp-tray button { font: 11px ui-monospace, "Cascadia Mono", "Courier New", monospace; padding: 5px 11px; border-radius: 8px; border: 1px solid var(--lp-line); background: var(--lp-panel); color: var(--lp-ink-2); cursor: pointer; }
+    .lp-tray button:hover { border-color: var(--lp-line-2); color: var(--lp-ink); }
+    .lp-tray button[aria-pressed="true"] { color: var(--lp-accent); border-color: #6f6f20; }
+
+    .panel.lp { width: min(1000px, 100%); margin: 44px auto 0; padding: 26px clamp(16px, 3vw, 30px); border: 1px solid var(--lp-line); border-radius: 16px; background: linear-gradient(180deg, var(--lp-panel) 0%, var(--lp-panel-2) 100%); }
+    .panel.lp h2 { font-size: 12px; letter-spacing: 4px; text-transform: uppercase; color: var(--lp-accent); margin: 0 0 10px; }
+    .panel.lp > p.lp-lead { font-size: 15px; line-height: 1.65; margin: 0 0 20px; max-width: 70ch; }
+    .panel.lp p.lp-lead b { color: var(--lp-ink); font-weight: 600; }
+    .lp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .lp-card { padding: 18px; border: 1px solid var(--lp-line); border-radius: 12px; background: rgba(255, 255, 255, 0.016); min-width: 0; }
+    .lp-card h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; font-size: 14px; color: var(--lp-ink); font-weight: 600; letter-spacing: 0.02em; }
+    .lp-card h3 svg { width: 17px; height: 17px; flex: 0 0 auto; }
+    .lp-card h3 .pts { margin-left: auto; font: 600 12px/1 ui-monospace, "Cascadia Mono", monospace; color: var(--lp-accent); }
+    .lp-card p { font-size: 13.5px; line-height: 1.6; margin: 0 0 9px; }
+    .lp-card p:last-child { margin-bottom: 0; }
+    .lp-card b { color: var(--lp-ink); font-weight: 600; }
+    .lp-card .plate { display: grid; place-items: center; height: 92px; margin: -4px 0 14px; border-radius: 8px; background: var(--lp-river); }
+    .lp-card .plate.land { background: var(--lp-bank); }
+    .lp-card .plate img { image-rendering: pixelated; max-width: 100%; }
+    .lp-card .plate.scene { height: auto; background: none; }
+    .lp-card .plate.scene img { width: 100%; height: auto; border-radius: 6px; }
+    ul.lp-keys { list-style: none; margin: 0; padding: 0; }
+    ul.lp-keys li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; }
+    ul.lp-keys li:first-child { border-top: 0; }
+    ul.lp-keys li > span:last-child { text-align: right; flex: 0 0 auto; }
+    .lp-aside { margin-top: 18px; padding: 14px 16px; border-left: 3px solid var(--lp-accent); background: rgba(232, 232, 74, 0.06); border-radius: 0 10px 10px 0; font-size: 13.5px; line-height: 1.6; }
+    .lp-aside b { color: var(--lp-ink); }
+    .lp-aside ul { margin: 8px 0 0 18px; }
+    .lp-aside li { margin: 4px 0; }
+
+    .river-row { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 18px; align-items: start; }
+    .flow {
+      height: 520px; border-radius: 12px; border: 1px solid var(--lp-line);
+      background-color: var(--lp-river); background-image: url(img/map.png); background-repeat: repeat-y;
+      background-size: 228px auto; background-position: center 0;
+      image-rendering: pixelated; animation: flow 60s linear infinite; position: relative; overflow: hidden;
     }
-    .stat .value {
-      font: 700 22px/1.1 ui-monospace, monospace;
-      margin-top: 6px;
-    }
-    canvas {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.15);
-      image-rendering: pixelated;
-      background: #0b1724;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-    button, a.button {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, #16304a, #0d2236);
-      color: var(--fg);
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      text-decoration: none;
-      font: inherit;
-    }
-    button:hover, a.button:hover { border-color: rgba(92,200,255,0.55); }
-    .side {
-      padding: 18px;
-      display: grid;
-      gap: 14px;
-    }
-    h1, h2, p { margin: 0; }
-    h1 { font-size: 22px; }
-    h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-    .card {
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      display: grid;
-      gap: 8px;
-    }
-    .mono { font-family: ui-monospace, monospace; }
-    .muted { color: var(--muted); }
-    #debug { font-size: 12px; color: var(--muted); }
-    ul {
-      margin: 0;
-      padding-left: 18px;
-    }
-    @media (max-width: 900px) {
-      .shell { grid-template-columns: 1fr; }
+    .flow img { position: absolute; left: 50%; bottom: 12%; width: 12px; transform: translateX(-50%); image-rendering: pixelated; }
+    @keyframes flow { from { background-position-y: 0; } to { background-position-y: 1701px; } }
+    @media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+    @media (max-width: 760px) { .river-row { grid-template-columns: minmax(0, 1fr); } .flow { height: 260px; } }
+
+    .lp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 4px; }
+    .lp-stat { padding: 16px; border: 1px solid var(--lp-line); border-radius: 12px; text-align: center; background: rgba(255, 255, 255, 0.016); }
+    .lp-stat .n { display: block; font-size: 30px; line-height: 1.1; font-weight: 700; color: var(--lp-accent); font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace; font-variant-numeric: tabular-nums; }
+    .lp-stat .t { display: block; margin-top: 7px; font-size: 12px; line-height: 1.45; color: var(--lp-ink-3); }
+
+    details.lp-dev { width: min(1000px, 100%); margin: 0 auto; }
+    details.lp-dev > summary { cursor: pointer; list-style: none; margin-top: 40px; padding: 13px 16px; border: 1px solid var(--lp-line); border-radius: 12px; background: var(--lp-panel-2); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--lp-ink-3); font-family: ui-monospace, "Cascadia Mono", "Courier New", monospace; }
+    details.lp-dev > summary::-webkit-details-marker { display: none; }
+    details.lp-dev > summary:hover { color: var(--lp-ink-2); border-color: var(--lp-line-2); }
+    details.lp-dev ul { list-style: none; padding: 16px 4px 0; display: grid; gap: 8px; font-size: 13px; }
+
+    .lp-foot { width: min(1000px, 100%); margin: 40px auto 0; padding: 22px 4px 56px; border-top: 1px solid var(--lp-line); font-size: 12px; line-height: 1.6; color: var(--lp-ink-3); display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; }
+    .lp-foot p { max-width: 70ch; }
+
+    @media (max-width: 640px) {
+      .panel.lp { margin-top: 28px; padding: 20px 16px; }
+      .lp-hero { padding: 28px 0 18px; }
+      .lp-hero .lp-sub { font-size: 15px; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <section class="panel game-wrap">
-      <div class="hud">
-        <div class="stat"><div class="label">Score</div><div class="value" id="score">000000</div></div>
-        <div class="stat"><div class="label">Fuel</div><div class="value" id="fuel">100%</div></div>
-        <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
-        <div class="stat"><div class="label">Section</div><div class="value" id="section">1</div></div>
-        <div class="stat"><div class="label">State</div><div class="value" id="status">running</div></div>
-      </div>
-      <canvas id="gameCanvas" width="640" height="398" aria-label="River Raid port game canvas"></canvas>
-      <div class="controls">
-        <button id="pauseButton" type="button">Pause</button>
-        <button id="resetButton" type="button">Reset</button>
-        <a class="button" href="./inspector.html">Open Inspector</a>
-      </div>
-    </section>
+<main>
+  <header class="lp-hero">
+    <div class="lp-stripes" aria-hidden="true">
+      <span style="background: var(--lp-river)"></span>
+      <span style="background: var(--lp-bank)"></span>
+      <span style="background: var(--lp-bank-dark)"></span>
+      <span style="background: var(--lp-road)"></span>
+      <span style="background: var(--lp-accent)"></span>
+      <span style="background: var(--lp-fuel)"></span>
+    </div>
+    <h1>River Raid</h1>
+    <div class="lp-year">Activision · Atari 2600 · 1982</div>
+    <p class="lp-sub">Carol Shaw's endless river, the same every time you fly it. The cartridge <b>rebuilt from the original ROM</b>, one instruction at a time: every bank, bridge, fuel depot and missile behaves as the real machine plays them.</p>
+    <div class="lp-cta">
+      <a class="lp-btn primary" href="#play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l1.6 5.2 6.4 4.3v2l-6.1-1.6-.6 4.4 2.7 1.7v1.5L12 19l-4 1v-1.5l2.7-1.7-.6-4.4L4 14V12l6.4-4.3z"/></svg> Play now</a>
+      <a class="lp-btn" href="#how">Controls</a>
+      <a class="lp-btn" href="#rom">How it was built</a>
+    </div>
+  </header>
 
-    <aside class="panel side">
-      <div>
-        <h1>River Raid Port</h1>
-        <p class="muted">Default page is now the playable harness view. The inspector is still preserved separately.</p>
+  <div id="play" class="canvas-shell">
+    <div class="tv">
+      <canvas width="640" height="398" tabindex="0" aria-label="River Raid. Arrow keys or WASD to fly, Space or Z to fire, Enter for Game Reset."></canvas>
+      <div class="poster" data-poster>
+        <img src="img/start.png" alt="River Raid's opening screen: the river between green banks, a helicopter, a fuel depot and a ship ahead, a house on the bank, the jet on the road and the status bar with score, fuel gauge and lives.">
+        <button class="lp-btn primary" type="button" data-play>Play River Raid</button>
       </div>
-
-      <div class="card">
-        <h2>Controls</h2>
-        <ul>
-          <li>Move: Arrow keys or WASD</li>
-          <li>Fire: Space or Z</li>
-          <li>Pause: P or the pause button</li>
-          <li>Mute: M</li>
-          <li>Gamepad: stick or D-pad, A/B/X/Y fire, Start reset, Back pause</li>
-          <li>Reset: R or the reset button</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>Scope</h2>
-        <p>This page strips away the inspector panels and runs the visible gameplay harness directly: title/game-over flow, scrolling river, on-canvas HUD, player motion, shots, fuel, collisions, bridges, spawning, patrol behavior, and rolling scene replacement.</p>
-      </div>
-
-      <div class="card">
-        <h2>Debug</h2>
-        <div id="debug" class="mono">booting…</div>
-      </div>
-
-      <div class="card">
-        <h2>Inspector route</h2>
-        <p class="mono">/inspector.html</p>
-      </div>
-    </aside>
+    </div>
+    <div id="status-line" data-hint aria-live="polite">Press Play, then push up or fire to take off</div>
+  </div>
+  <div id="tc" aria-label="Touch controls">
+    <div class="dpad">
+      <button type="button" data-hold="up" aria-label="Speed up">▲</button>
+      <button type="button" data-hold="left" aria-label="Left">◀</button>
+      <button type="button" data-hold="right" aria-label="Right">▶</button>
+      <button type="button" data-hold="down" aria-label="Slow down">▼</button>
+    </div>
+    <button type="button" class="fire" data-hold="fire">Fire</button>
+  </div>
+  <div class="lp-tray">
+    <div><kbd>←</kbd><kbd>→</kbd> steer · <kbd>↑</kbd><kbd>↓</kbd> speed · <kbd>Space</kbd> fire · <kbd>Enter</kbd> Game Reset</div>
+    <div class="switches">
+      <button type="button" data-reset>Game Reset</button>
+      <button type="button" data-pause>Pause</button>
+      <button type="button" data-mute aria-pressed="false">Mute</button>
+      <button type="button" id="lp-fullscreen">Fullscreen</button>
+    </div>
   </div>
 
-    <script type="module" src="./game.mjs?v=20"></script>
+  <section class="panel lp" id="how">
+    <h2>How to play</h2>
+    <p class="lp-lead">Fly up the river and shoot what gets in your way. <b>Fuel drains the whole time</b>: fly over a depot to fill the tank before the gauge reaches E. Touch a bank, a bridge or anything on the water and the jet goes down.</p>
+    <div class="lp-grid">
+      <div class="lp-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7 14h10"/></svg> At the controls</h3>
+        <ul class="lp-keys">
+          <li><span>Steer</span><span><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd></span></li>
+          <li><span>Speed up</span><span><kbd>↑</kbd> or <kbd>W</kbd></span></li>
+          <li><span>Slow down</span><span><kbd>↓</kbd> or <kbd>S</kbd></span></li>
+          <li><span>Fire</span><span><kbd>Space</kbd> / <kbd>Z</kbd></span></li>
+          <li><span>Game Reset</span><span><kbd>Enter</kbd></span></li>
+          <li><span>Pause · Mute</span><span><kbd>P</kbd> · <kbd>M</kbd></span></li>
+        </ul>
+      </div>
+      <div class="lp-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 7h7a5.5 5.5 0 0 1 5.4 4.5l.8 4.2A2.6 2.6 0 0 1 19.2 19c-1 0-1.6-.6-2.3-1.4L15.6 16H8.4l-1.3 1.6C6.4 18.4 5.8 19 4.8 19a2.6 2.6 0 0 1-2.5-3.3l.8-4.2A5.5 5.5 0 0 1 8.5 7Z"/><path d="M7 11v3M5.5 12.5h3M15.8 11.6h.01M18.1 13.4h.01"/></svg> On a gamepad</h3>
+        <ul class="lp-keys">
+          <li><span>The joystick</span><span>stick or D-pad</span></li>
+          <li><span>Fire</span><span>A · B · X · Y</span></li>
+          <li><span>Game Reset</span><span>Start</span></li>
+          <li><span>Pause</span><span>Back</span></li>
+        </ul>
+        <p style="margin-top: 12px">The Atari joystick has one button and eight directions, so every face button fires. Sound starts after your first click or key press; that is the browser's rule, not the cartridge's.</p>
+      </div>
+      <div class="lp-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M3 20h14M15 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V9l-3-3"/><path d="M8 8h4"/></svg> Fuel</h3>
+        <p>The gauge under the river runs from <b>E</b> to <b>F</b>. It drains every frame you fly, faster than it looks, and a warning tone starts once it drops below a quarter.</p>
+        <p>Fly over a depot and the tank refills while you stay on it. Shoot a depot instead and it is worth <b>80 points</b>, but the fuel is gone.</p>
+      </div>
+      <div class="lp-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.4 4.6 5.6 3.7v1.7l-5.3-1.4-.5 3.8 2.3 1.5V18L12 17.2 8.5 18v-1.1l2.3-1.5-.5-3.8L5 13v-1.7l5.6-3.7z"/></svg> Lives</h3>
+        <p>You start with <b>three jets</b> and earn another every <b>10,000 points</b>, up to nine.</p>
+        <p>After a crash the river rewinds to the start of the section and replays it exactly, because the cartridge saved its random numbers there.</p>
+      </div>
+    </div>
+    <div class="lp-aside"><b>The river is never stored.</b> The whole game fits in a 4,096-byte cartridge, so each 32-line block of river is built just before it scrolls into view, from a 16-bit random number generator that starts from the same seed, <code>$A814</code>, every game. That is why the river never ends, and why it is the same river every time you play.</div>
+  </section>
+
+  <section class="panel lp" id="river">
+    <h2>The river</h2>
+    <p class="lp-lead">Thirty-two blocks make a section, and every section ends at a <b>road and a bridge</b>. Odd sections run straight; even ones wind and split around islands. Further up the river there are more enemies and fewer depots.</p>
+    <div class="river-row">
+      <div class="lp-grid">
+        <div class="lp-card">
+          <div class="plate"><img src="img/sprite_ship.png" alt="Tanker" width="108" height="24"></div>
+          <h3>Tanker <span class="pts">30</span></h3>
+          <p>Starts moving at random and patrols, turning back when it touches a bank. Where the river is too narrow for a ship, the cartridge puts a helicopter there instead.</p>
+        </div>
+        <div class="lp-card">
+          <div class="plate"><img src="img/sprite_heli.png" alt="Helicopter" width="48" height="30"></div>
+          <h3>Helicopter <span class="pts">60</span></h3>
+          <p>Its rotor is two shapes swapped every other frame. Patrols like the tanker.</p>
+        </div>
+        <div class="lp-card">
+          <div class="plate"><img src="img/sprite_plane.png" alt="Jet fighter" width="48" height="18"></div>
+          <h3>Jet <span class="pts">100</span></h3>
+          <p>Appears from section three. Crosses the whole screen without stopping and wraps around at the edge.</p>
+        </div>
+        <div class="lp-card">
+          <div class="plate"><img src="img/sprite_fuel.png" alt="Fuel depot" width="48" height="72"></div>
+          <h3>Fuel depot <span class="pts">80</span></h3>
+          <p>Refuels you while you fly over it, or scores if you shoot it.</p>
+        </div>
+        <div class="lp-card">
+          <div class="plate scene"><img src="img/bridge_scene.png" alt="The road and bridge at the end of a section" width="304" height="44"></div>
+          <h3>Bridge <span class="pts">500</span></h3>
+          <p>Shoot it to open the next section. Flying into it costs a life.</p>
+        </div>
+        <div class="lp-card">
+          <div class="plate land"><img src="img/sprite_house.png" alt="House and tree" width="108" height="57"></div>
+          <h3>House <span class="pts">0</span></h3>
+          <p>Scenery on the banks and islands, and the only thing on the river worth nothing.</p>
+        </div>
+      </div>
+      <div class="flow" role="img" aria-label="The first three sections of the river as the generator builds them, scrolling past"><img src="img/sprite_jet.png" alt=""></div>
+    </div>
+  </section>
+
+  <section class="panel lp" id="rom">
+    <h2>Built from the ROM</h2>
+    <p class="lp-lead">This is not an emulator. Every routine of the cartridge was <b>rewritten in JavaScript one 6502 instruction at a time</b>, working on the same 128 bytes of RAM at the same addresses. To prove it, a small 6502 core runs the real ROM beside the port and every frame is compared, byte for byte.</p>
+    <div class="lp-stats">
+      <div class="lp-stat"><span class="n">0</span><span class="t">differences from the cartridge in 45,000 compared frames of play</span></div>
+      <div class="lp-stat"><span class="n">300,000</span><span class="t">river-generator states checked, sections 1 to 48</span></div>
+      <div class="lp-stat"><span class="n">31,840</span><span class="t">pixels of the opening frame, identical to a Stella capture</span></div>
+      <div class="lp-stat"><span class="n">4,096</span><span class="t">bytes in the whole cartridge, code and graphics</span></div>
+    </div>
+    <div class="lp-aside"><b>Read in the ROM.</b> The code holds a few things the manual never mentions:
+      <ul>
+        <li>There is no score in memory. The six digits are pointers to the digit graphics, and points are added to the pointers.</li>
+        <li>Collisions come only from the TIA's hardware latches, read once per river block. There is no collision arithmetic at all.</li>
+        <li>Flying into a ship, helicopter or jet still scores it as you go down.</li>
+        <li>Touching a house runs the same code as touching a fuel depot.</li>
+        <li>When a new block has only just scrolled in, a collision at the very top is filed under a seventh block that does not exist, and the flag lands in the first object's position byte.</li>
+      </ul>
+      The port keeps all of it, because that is the game.</div>
+  </section>
+
+  <details class="lp-dev">
+    <summary>Developer pages</summary>
+    <ul>
+      <li><a href="harness.html">Harness</a>: the port with live score, fuel, lives and RAM readouts</li>
+      <li><a href="inspector.html">Inspector</a>: the earlier ROM-visible model and its memory views</li>
+      <li><a href="https://github.com/Plicerin/riverraid-rom-port#verify-against-the-rom">Verifying against the ROM</a>: the 6502 oracle and the comparison scripts</li>
+    </ul>
+  </details>
+
+  <footer class="lp-foot">
+    <p><i>River Raid</i> is © 1982 Activision, designed and programmed by Carol Shaw. An unofficial preservation project, not affiliated with Activision. Built with the help of Thomas Jentzsch's 2001 disassembly; colors from Stella's NTSC palette. The ROM file is not included.</p>
+    <a href="https://github.com/Plicerin/riverraid-rom-port">Source on GitHub</a>
+  </footer>
+</main>
+
+<script type="module">
+  import { mountPlayer } from './riverraidPlayer.mjs';
+  const shell = document.getElementById('play');
+  const boot = () => mountPlayer(shell.parentElement);
+  window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot();
+  document.getElementById('lp-fullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else shell.requestFullscreen?.().catch(() => {});
+    shell.querySelector('canvas').focus({ preventScroll: true });
+  });
+</script>
 </body>
 </html>
