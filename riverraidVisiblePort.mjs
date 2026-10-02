@@ -1,4 +1,5 @@
 import { VERIFIED_SPRITE_VARIANT_META } from './riverraid_verified_sprite_meta.mjs';
+import { kernelShapeBitmap } from './riverraidKernelSprites.mjs';
 
 const SLOT_NAMES = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -753,6 +754,8 @@ export function resolveVisibleSpriteVariant(shapeId, frameCnt = 0) {
     height: Number.isFinite(Number(meta?.height)) ? Math.max(1, Math.trunc(Number(meta.height))) : 8,
     verified: !!meta?.verified,
     meta,
+    // Interlaced A/B rows as the kernel draws them (24 scanlines), independent of frame parity.
+    bitmap: kernelShapeBitmap(u8(shapeId)),
   };
 }
 

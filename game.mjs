@@ -52,11 +52,13 @@ function shapeColor(shapeId) {
 function drawBitmap(targetCtx, bitmap, centerX, centerY, color, options = {}) {
   if (!bitmap?.length) return;
   const scale = options.scale ?? 3;
+  const scaleX = options.scaleX ?? scale;
+  const scaleY = options.scaleY ?? scale;
   const reflect = !!options.reflect;
   const copies = options.copies ?? 1;
-  const spacing = options.spacing ?? Math.max(scale * 10, 18);
-  const width = bitmap[0].length * scale;
-  const height = bitmap.length * scale;
+  const spacing = options.spacing ?? Math.max(scaleX * 10, 18);
+  const width = bitmap[0].length * scaleX;
+  const height = bitmap.length * scaleY;
   const startX = centerX - (((copies - 1) * spacing) + width) / 2;
   targetCtx.fillStyle = color;
   for (let copy = 0; copy < copies; copy += 1) {
@@ -66,7 +68,7 @@ function drawBitmap(targetCtx, bitmap, centerX, centerY, color, options = {}) {
       for (let col = 0; col < bits.length; col += 1) {
         if (bits[col] !== '1') continue;
         const pixelCol = reflect ? (bits.length - 1 - col) : col;
-        targetCtx.fillRect(leftX + pixelCol * scale, centerY - height / 2 + row * scale, scale, scale);
+        targetCtx.fillRect(leftX + pixelCol * scaleX, centerY - height / 2 + row * scaleY, scaleX, scaleY);
       }
     }
   }
@@ -151,10 +153,14 @@ function copiesForSlot(slot) {
   return 1;
 }
 
-function spriteScaleForSlot(slot, rowH) {
-  const base = Math.max(2, Math.floor(rowH / 18));
+// Object bitmaps are one scanline per row, so draw them at the playfield's
+// line/clock scale; NUSIZ stretches width only.
+function spriteScaleForSlot(slot) {
   const sizeMult = slot?.state1?.nusiz >= 7 ? 4 : slot?.state1?.nusiz >= 5 ? 2 : 1;
-  return Math.max(2, Math.min(6, base)) * sizeMult;
+  return {
+    scaleX: (logicalWidth / 160) * sizeMult,
+    scaleY: logicalHeight / visiblePort.GAME_CONSTANTS.NUM_LINES,
+  };
 }
 
 function xToCanvas(x) {
@@ -450,11 +456,8 @@ function drawWorld() {
     const sprite = visiblePort.resolveVisibleSpriteVariant(slot.shapeId, frameCnt);
     const clampedX = clamp(slot.inspectX ?? slot.coarseX, row.left + 4, row.right - 4);
     const ox = xToCanvas(clampedX);
-    const slotScale = slot.shapeName === 'Bridge'
-      ? Math.max(2, Math.floor(rowH / 11))
-      : spriteScaleForSlot(slot, rowH);
     const spriteOptions = {
-      scale: slotScale,
+      ...spriteScaleForSlot(slot),
       reflect: slot.state1?.refp1Label === 'reflected',
       copies: copiesForSlot(slot),
     };
