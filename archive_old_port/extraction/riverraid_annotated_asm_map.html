@@ -1,0 +1,375 @@
+<!doctype html><html><head><meta charset="utf-8"><title>River Raid annotated asm map</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:12px} table{border-collapse:collapse} td,th{border:1px solid #444;padding:4px 8px} pre{background:#1a1a1a;padding:8px;white-space:pre-wrap}</style></head><body><h1>River Raid annotated ASM map</h1><p>CPU addresses mapped assuming 4K ROM at $F000-$FFFF.</p><table><tr><th>Label</th><th>CPU addr</th><th>ROM offset</th></tr><tr><td>PFPat0</td><td>$F0E6</td><td>0x00E6</td></tr><tr><td>PFPat10</td><td>$F176</td><td>0x0176</td></tr><tr><td>PFPat11</td><td>$F15B</td><td>0x015B</td></tr><tr><td>PFPat12</td><td>$F13E</td><td>0x013E</td></tr><tr><td>PFPat13</td><td>$F11F</td><td>0x011F</td></tr><tr><td>PFPat14</td><td>$F0FE</td><td>0x00FE</td></tr><tr><td>FuelTab0</td><td>$F300</td><td>0x0300</td></tr><tr><td>FuelTab1</td><td>$F30F</td><td>0x030F</td></tr><tr><td>FuelTab2</td><td>$F31D</td><td>0x031D</td></tr><tr><td>FuelTab3</td><td>$F32B</td><td>0x032B</td></tr><tr><td>FuelTab4</td><td>$F339</td><td>0x0339</td></tr><tr><td>ENABLTab</td><td>$F348</td><td>0x0348</td></tr><tr><td>ScoreTab</td><td>$F353</td><td>0x0353</td></tr><tr><td>FuelA</td><td>$F35E</td><td>0x035E</td></tr><tr><td>FuelB</td><td>$F369</td><td>0x0369</td></tr><tr><td>BridgeA</td><td>$F375</td><td>0x0375</td></tr><tr><td>BridgeB</td><td>$F376</td><td>0x0376</td></tr><tr><td>ShipA</td><td>$F3A2</td><td>0x03A2</td></tr><tr><td>ShipB</td><td>$F381</td><td>0x0381</td></tr><tr><td>PlaneA</td><td>$F388</td><td>0x0388</td></tr><tr><td>PlaneB</td><td>$F3A9</td><td>0x03A9</td></tr><tr><td>Heli0A</td><td>$F399</td><td>0x0399</td></tr><tr><td>Heli0B</td><td>$F3BA</td><td>0x03BA</td></tr><tr><td>Heli1A</td><td>$F3B1</td><td>0x03B1</td></tr><tr><td>Heli1B</td><td>$F391</td><td>0x0391</td></tr><tr><td>Explosion0</td><td>$F310</td><td>0x0310</td></tr><tr><td>Explosion1A</td><td>$F3CA</td><td>0x03CA</td></tr><tr><td>Explosion1B</td><td>$F3C2</td><td>0x03C2</td></tr><tr><td>Explosion2A</td><td>$F3DC</td><td>0x03DC</td></tr><tr><td>Explosion2B</td><td>$F3D3</td><td>0x03D3</td></tr><tr><td>HouseA</td><td>$F3F2</td><td>0x03F2</td></tr><tr><td>HouseB</td><td>$F3E7</td><td>0x03E7</td></tr><tr><td>PageFlagTab</td><td>$F0B7</td><td>0x00B7</td></tr><tr><td>shapePtr1aTab</td><td>$F461</td><td>0x0461</td></tr><tr><td>shapePtr1bTab</td><td>$F0BB</td><td>0x00BB</td></tr><tr><td>ShapePosTab</td><td>$F0C6</td><td>0x00C6</td></tr><tr><td>EnemyIdTab</td><td>$F459</td><td>0x0459</td></tr><tr><td>AnimateIdTab</td><td>$F0DF</td><td>0x00DF</td></tr><tr><td>BankPtrTab</td><td>$F1D7</td><td>0x01D7</td></tr><tr><td>InitTab</td><td>$F2B1</td><td>0x02B1</td></tr><tr><td>ColorPtrTab</td><td>$F400</td><td>0x0400</td></tr><tr><td>RoadColorTab</td><td>$F44C</td><td>0x044C</td></tr><tr><td>ColorTab</td><td>$F46C</td><td>0x046C</td></tr></table><h2>FuelTab0</h2><pre>FuelTab0:
+       .byte $7F ; | XXXXXXX| $FE00
+       .byte $40 ; | X      |
+       .byte $4F ; | X  XXXX|
+       .byte $48 ; | X  X   |
+       .byte $48 ; | X  X   |
+       .byte $4E ; | X  XXX |
+       .byte $48 ; | X  X   |
+       .byte $48 ; | X  X   |
+       .byte $4F ; | X  XXXX|
+       .byte $40 ; | X      |
+       .byte $40 ; | X      |
+       .byte $4C ; | X  XX  |
+       .byte $4C ; | X  XX  |
+       .byte $4C ; | X  XX  |
+       .byte $7F ; | XXXXXXX|
+
+FuelTab1:</pre><h2>FuelTab1</h2><pre>FuelTab1:
+       .byte $FF ; |XXXXXXXX|
+Explosion0:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+FuelTab2:
+       .byte $FF ; |XXXXXXXX|</pre><h2>FuelTab2</h2><pre>FuelTab2:
+       .byte $FF ; |XXXXXXXX|
+       .byte $00 ; |        |
+       .byte $03 ; |      XX|
+       .byte $C2 ; |XX    X |
+       .byte $63 ; | XX   XX|
+       .byte $30 ; |  XX    |
+       .byte $1B ; |   XX XX|
+       .byte $EC ; |XXX XX  |
+       .byte $46 ; | X   XX |
+       .byte $43 ; | X    XX|
+       .byte $C1 ; |XX     X|
+       .byte $48 ; | X  X   |
+       .byte $08 ; |    X   |
+       .byte $08 ; |    X   |
+FuelTab3:
+       .byte $FF ; |XXXXXXXX|
+       .byte $00 ; |        |</pre><h2>FuelTab3</h2><pre>FuelTab3:
+       .byte $FF ; |XXXXXXXX|
+       .byte $00 ; |        |
+       .byte $80 ; |X       |
+       .byte $00 ; |        |
+       .byte $80 ; |X       |
+       .byte $80 ; |X       |
+       .byte $80 ; |X       |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $80 ; |X       |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+FuelTab4:
+       .byte $FF ; |XXXXXXXX|
+       .byte $01 ; |       X|</pre><h2>FuelTab4</h2><pre>FuelTab4:
+       .byte $FF ; |XXXXXXXX|
+       .byte $01 ; |       X|
+       .byte $81 ; |X      X|
+       .byte $81 ; |X      X|
+       .byte $81 ; |X      X|
+       .byte $E1 ; |XXX    X|
+       .byte $81 ; |X      X|
+       .byte $81 ; |X      X|
+       .byte $F1 ; |XXXX   X|
+       .byte $01 ; |       X|
+       .byte $01 ; |       X|
+       .byte $19 ; |   XX  X|
+       .byte $19 ; |   XX  X|
+       .byte $19 ; |   XX  X|
+       .byte $FF ; |XXXXXXXX|
+
+; used to en- or disable ball in fuel display:</pre><h2>FuelA</h2><pre>FuelA:
+       .byte $FE ; |XXXXXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $FE ; |XXXXXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $FE ; |XXXXXXX |
+       .byte $D6 ; |XX X XX |
+       .byte $D6 ; |XX X XX |
+       .byte $DE ; |XX XXXX |
+       .byte $CE ; |XX  XXX |
+FuelB:
+       .byte $C6 ; |XX   XX |
+       .byte $DE ; |XX XXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $C6 ; |XX   XX |
+       .byte $CE ; |XX  XXX |</pre><h2>FuelB</h2><pre>FuelB:
+       .byte $C6 ; |XX   XX |
+       .byte $DE ; |XX XXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $C6 ; |XX   XX |
+       .byte $CE ; |XX  XXX |
+       .byte $C6 ; |XX   XX |
+       .byte $C6 ; |XX   XX |
+       .byte $D6 ; |XX X XX |
+
+       .byte $FE ; |XXXXXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $DE ; |XX XXXX |
+       .byte $7C ; | XXXXX  |
+BridgeA:
+       .byte $42 ; | X    X |
+BridgeB:
+       .byte $FF ; |XXXXXXXX|</pre><h2>BridgeA</h2><pre>BridgeA:
+       .byte $42 ; | X    X |
+BridgeB:
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $42 ; | X    X |
+ShipB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |</pre><h2>BridgeB</h2><pre>BridgeB:
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $FF ; |XXXXXXXX|
+       .byte $42 ; | X    X |
+ShipB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $FC ; |XXXXXX  |
+       .byte $FF ; |XXXXXXXX|</pre><h2>ShipA</h2><pre>ShipA:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $7C ; | XXXXX  |
+       .byte $FE ; |XXXXXXX |
+       .byte $78 ; | XXXX   |
+       .byte $10 ; |   X    |
+PlaneB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $38 ; |  XXX   |
+       .byte $FF ; |XXXXXXXX|
+       .byte $80 ; |X       |
+Heli1A:</pre><h2>ShipB</h2><pre>ShipB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $FC ; |XXXXXX  |
+       .byte $FF ; |XXXXXXXX|
+       .byte $30 ; |  XX    |
+       .byte $10 ; |   X    |
+PlaneA:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $30 ; |  XX    |
+       .byte $4F ; | X  XXXX|
+       .byte $C6 ; |XX   XX |
+       .byte $00 ; |        |</pre><h2>PlaneA</h2><pre>PlaneA:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $30 ; |  XX    |
+       .byte $4F ; | X  XXXX|
+       .byte $C6 ; |XX   XX |
+       .byte $00 ; |        |
+Heli1B:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $0E ; |    XXX |
+       .byte $8E ; |X   XXX |
+       .byte $FF ; |XXXXXXXX|
+       .byte $0E ; |    XXX |</pre><h2>PlaneB</h2><pre>PlaneB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $38 ; |  XXX   |
+       .byte $FF ; |XXXXXXXX|
+       .byte $80 ; |X       |
+Heli1A:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $FF ; |XXXXXXXX|
+       .byte $9F ; |X  XXXXX|
+       .byte $04 ; |     X  |</pre><h2>Heli0A</h2><pre>Heli0A:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $FF ; |XXXXXXXX|
+       .byte $9F ; |X  XXXXX|
+       .byte $04 ; |     X  |
+       .byte $07 ; |     XXX|
+ShipA:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $7C ; | XXXXX  |
+       .byte $FE ; |XXXXXXX |
+       .byte $78 ; | XXXX   |
+       .byte $10 ; |   X    |</pre><h2>Heli0B</h2><pre>Heli0B:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $0E ; |    XXX |
+       .byte $8E ; |X   XXX |
+       .byte $FF ; |XXXXXXXX|
+       .byte $0E ; |    XXX |
+       .byte $1C ; |   XXX  |
+Explosion1B:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $10 ; |   X    |
+       .byte $20 ; |  X     |
+       .byte $40 ; | X      |
+       .byte $10 ; |   X    |</pre><h2>Heli1A</h2><pre>Heli1A:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $FF ; |XXXXXXXX|
+       .byte $9F ; |X  XXXXX|
+       .byte $04 ; |     X  |
+       .byte $1C ; |   XXX  |
+Heli0B:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $0E ; |    XXX |
+       .byte $8E ; |X   XXX |
+       .byte $FF ; |XXXXXXXX|
+       .byte $0E ; |    XXX |</pre><h2>Heli1B</h2><pre>Heli1B:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $0E ; |    XXX |
+       .byte $8E ; |X   XXX |
+       .byte $FF ; |XXXXXXXX|
+       .byte $0E ; |    XXX |
+       .byte $07 ; |     XXX|
+Heli0A:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $FF ; |XXXXXXXX|
+       .byte $9F ; |X  XXXXX|
+       .byte $04 ; |     X  |</pre><h2>HouseA</h2><pre>HouseA:
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $0E ; |    XXX |
+       .byte $1F ; |   XXXXX|
+       .byte $0E ; |    XXX |
+       .byte $04 ; |     X  |
+       .byte $00 ; |        |
+       .byte $FE ; |XXXXXXX |
+       .byte $AA ; |X X X X |
+       .byte $FE ; |XXXXXXX |
+       .byte $38 ; |  XXX   |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+
+
+;===============================================================================</pre><h2>HouseB</h2><pre>HouseB:
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $1F ; |   XXXXX|
+       .byte $0E ; |    XXX |
+       .byte $04 ; |     X  |
+       .byte $04 ; |     X  |
+       .byte $00 ; |        |
+       .byte $AA ; |X X X X |
+       .byte $FE ; |XXXXXXX |
+       .byte $7C ; | XXXXX  |
+       .byte $00 ; |        |
+HouseA:
+       .byte $00 ; |        |
+       .byte $04 ; |     X  |
+       .byte $0E ; |    XXX |
+       .byte $1F ; |   XXXXX|
+       .byte $0E ; |    XXX |</pre><h2>EnemyIdTab</h2><pre>EnemyIdTab:
+       .byte ID_SHIP, ID_HELI0, ID_SHIP, ID_HELI0, ID_PLANE, ID_SHIP, ID_HELI0, ID_HELI0
+
+shapePtr1aTab:
+       .byte <Explosion0-1, <Explosion1A-1, <Explosion2A-1, <Explosion1A-1
+       .byte <PlaneA-1, <Heli0A-1, <Heli1A-1, <ShipA-1, <BridgeA-1, <HouseA-1, <FuelA-1
+
+
+;===============================================================================
+; R O M - C O D E (Part 6)
+;===============================================================================
+
+SwapPlayers SUBROUTINE
+; swaps player variable blocks in two player game:
+       LDA    gameVariation     ;3              don't swap in one player game
+       BEQ    .skipSwap         ;2
+       EOR    player            ;3              change player
+       STA    player            ;3</pre><h2>shapePtr1aTab</h2><pre>shapePtr1aTab:
+       .byte <Explosion0-1, <Explosion1A-1, <Explosion2A-1, <Explosion1A-1
+       .byte <PlaneA-1, <Heli0A-1, <Heli1A-1, <ShipA-1, <BridgeA-1, <HouseA-1, <FuelA-1
+
+
+;===============================================================================
+; R O M - C O D E (Part 6)
+;===============================================================================
+
+SwapPlayers SUBROUTINE
+; swaps player variable blocks in two player game:
+       LDA    gameVariation     ;3              don't swap in one player game
+       BEQ    .skipSwap         ;2
+       EOR    player            ;3              change player
+       STA    player            ;3
+
+       LDX    #3                ;2
+.loopSwap0:</pre><h2>shapePtr1bTab</h2><pre>shapePtr1bTab:
+       .byte <Explosion0-1, <Explosion1B-1, <Explosion2B-1, <Explosion1B-1
+       .byte <PlaneB-1, <Heli0B-1, <Heli1B-1, <ShipB-1, <BridgeB-1, <HouseB-1, <FuelB-1
+
+; x-positions of new object:
+ShapePosTab:
+       .byte 143, 141, 7, 10, 132, 13, 128, 18, 124, 22, 120, 26, 116, 30, 112
+
+
+;===============================================================================
+; R O M - C O D E (Part 2)
+;===============================================================================
+
+SetPFxPtr SUBROUTINE
+; called from kernel, sets pointers for new playfield data:
+       LDA    PF1Lst,X          ; 4
+       STA    PF1Ptr            ; 3
+       LDA    blockLst,X        ; 4</pre></body></html>

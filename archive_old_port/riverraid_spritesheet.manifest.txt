@@ -1,0 +1,55 @@
+# riverraid_spritesheet manifest
+# image: 1184x654 px  scale=6
+# groups: 3
+
+groups:
+  - name: PLAYER
+    sprites: 3
+      - JetStraight    8x18  hex=['0x0', '0x0', '0x0', '0x0', '0x0', '0x2a', '0x3e', '0x1c', '0x8', '0x49', '0x6b', '0x7f', '0x7f', '0x3e', '0x1c', '0x8', '0x8', '0x8']
+      - JetMove        8x18  hex=['0x0', '0x0', '0x0', '0x0', '0x2', '0x2e', '0x3c', '0x18', '0x8', '0xa', '0x2e', '0x3e', '0x3e', '0x3c', '0x18', '0x8', '0x8', '0x8']
+      - JetExplode     8x17  hex=['0x0', '0x0', '0x0', '0x0', '0x0', '0x2', '0x8', '0x10', '0x0', '0x40', '0x8', '0x21', '0x44', '0x10', '0x4', '0x8', '0x0']
+  - name: MOBS (ENEMIES)
+    sprites: 11
+      - PlaneA         8x 9  hex=['0x0', '0x0', '0x0', '0x0', '0x0', '0x30', '0x4f', '0xc6', '0x0']
+      - PlaneB         8x 8  hex=['0x0', '0x0', '0x0', '0x0', '0x0', '0x38', '0xff', '0x80']
+      - Heli0A         8x 9  hex=['0x0', '0x0', '0x0', '0x0', '0x4', '0xff', '0x9f', '0x4', '0x7']
+      - Heli0B         8x 8  hex=['0x0', '0x0', '0x0', '0xe', '0x8e', '0xff', '0xe', '0x1c']
+      - Heli1A         8x 9  hex=['0x0', '0x0', '0x0', '0x0', '0x4', '0xff', '0x9f', '0x4', '0x1c']
+      - Heli1B         8x 8  hex=['0x0', '0x0', '0x0', '0xe', '0x8e', '0xff', '0xe', '0x7']
+      - ShipA          8x 7  hex=['0x0', '0x0', '0x0', '0x7c', '0xfe', '0x78', '0x10']
+      - ShipB          8x 7  hex=['0x0', '0x0', '0x0', '0xfc', '0xff', '0x30', '0x10']
+      - HouseA         8x14  hex=['0x0', '0x4', '0xe', '0x1f', '0xe', '0x4', '0x0', '0xfe', '0xaa', '0xfe', '0x38', '0x0', '0x0', '0x0']
+      - HouseB         8x11  hex=['0x0', '0x4', '0x1f', '0xe', '0x4', '0x4', '0x0', '0xaa', '0xfe', '0x7c', '0x0']
+      - BridgeB        8x11  hex=['0xff', '0xff', '0xff', '0xff', '0xff', '0xff', '0xff', '0xff', '0xff', '0xff', '0x42']
+  - name: PROPS
+    sprites: 6
+      - FuelA          8x11  hex=['0xfe', '0xde', '0xde', '0xfe', '0xde', '0xde', '0xfe', '0xd6', '0xd6', '0xde', '0xce']
+      - FuelB          8x12  hex=['0xc6', '0xde', '0xde', '0xc6', '0xce', '0xc6', '0xc6', '0xd6', '0xfe', '0xde', '0xde', '0x7c']
+      - Explosion1A    8x 9  hex=['0x0', '0x0', '0x0', '0x0', '0x4', '0x2', '0x8', '0x4', '0x0']
+      - Explosion1B    8x 8  hex=['0x0', '0x0', '0x0', '0x0', '0x10', '0x20', '0x40', '0x10']
+      - Explosion2A    8x11  hex=['0x0', '0x0', '0x0', '0x4', '0x88', '0x10', '0x4', '0x80', '0x10', '0x0', '0x0']
+      - Explosion2B    8x 9  hex=['0x0', '0x0', '0x0', '0x20', '0x2', '0x41', '0x20', '0x2', '0x4']
+
+# Runtime atlas: load this PNG + read `atlas:` to draw
+# any sprite with: ctx.drawImage(atlasImg, x, y, w, h, dstX, dstY, dstW, dstH)
+atlas:
+  - {"name": "JetStraight", "group": "PLAYER", "x": 466, "y": 100, "w": 48, "h": 108}
+  - {"name": "JetMove", "group": "PLAYER", "x": 568, "y": 100, "w": 48, "h": 108}
+  - {"name": "JetExplode", "group": "PLAYER", "x": 670, "y": 100, "w": 48, "h": 102}
+  - {"name": "PlaneA", "group": "MOBS (ENEMIES)", "x": 58, "y": 322, "w": 48, "h": 54}
+  - {"name": "PlaneB", "group": "MOBS (ENEMIES)", "x": 160, "y": 322, "w": 48, "h": 48}
+  - {"name": "Heli0A", "group": "MOBS (ENEMIES)", "x": 262, "y": 322, "w": 48, "h": 54}
+  - {"name": "Heli0B", "group": "MOBS (ENEMIES)", "x": 364, "y": 322, "w": 48, "h": 48}
+  - {"name": "Heli1A", "group": "MOBS (ENEMIES)", "x": 466, "y": 322, "w": 48, "h": 54}
+  - {"name": "Heli1B", "group": "MOBS (ENEMIES)", "x": 568, "y": 322, "w": 48, "h": 48}
+  - {"name": "ShipA", "group": "MOBS (ENEMIES)", "x": 670, "y": 322, "w": 48, "h": 42}
+  - {"name": "ShipB", "group": "MOBS (ENEMIES)", "x": 772, "y": 322, "w": 48, "h": 42}
+  - {"name": "HouseA", "group": "MOBS (ENEMIES)", "x": 874, "y": 322, "w": 48, "h": 84}
+  - {"name": "HouseB", "group": "MOBS (ENEMIES)", "x": 976, "y": 322, "w": 48, "h": 66}
+  - {"name": "BridgeB", "group": "MOBS (ENEMIES)", "x": 1078, "y": 322, "w": 48, "h": 66}
+  - {"name": "FuelA", "group": "PROPS", "x": 313, "y": 520, "w": 48, "h": 66}
+  - {"name": "FuelB", "group": "PROPS", "x": 415, "y": 520, "w": 48, "h": 72}
+  - {"name": "Explosion1A", "group": "PROPS", "x": 517, "y": 520, "w": 48, "h": 54}
+  - {"name": "Explosion1B", "group": "PROPS", "x": 619, "y": 520, "w": 48, "h": 48}
+  - {"name": "Explosion2A", "group": "PROPS", "x": 721, "y": 520, "w": 48, "h": 66}
+  - {"name": "Explosion2B", "group": "PROPS", "x": 823, "y": 520, "w": 48, "h": 54}

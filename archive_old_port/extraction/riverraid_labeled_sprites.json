@@ -1,0 +1,1247 @@
+{
+  "sprites": {
+    "Explosion0": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_start_line": 3165,
+      "rows": 13,
+      "annotated_lines": [
+        {
+          "line": 3166,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3167,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3168,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3169,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3170,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3171,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3172,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3173,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3174,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3175,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3176,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3177,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3178,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    },
+    "FuelA": {
+      "bytes": [
+        254,
+        222,
+        222,
+        254,
+        222,
+        222,
+        254,
+        214,
+        214,
+        222,
+        206
+      ],
+      "source_start_line": 3243,
+      "rows": 11,
+      "annotated_lines": [
+        {
+          "line": 3244,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3245,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3246,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3247,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3248,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3249,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3250,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3251,
+          "text": "       .byte $D6 ; |XX X XX |",
+          "comment": "|XX X XX |"
+        },
+        {
+          "line": 3252,
+          "text": "       .byte $D6 ; |XX X XX |",
+          "comment": "|XX X XX |"
+        },
+        {
+          "line": 3253,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3254,
+          "text": "       .byte $CE ; |XX  XXX |",
+          "comment": "|XX  XXX |"
+        }
+      ]
+    },
+    "FuelB": {
+      "bytes": [
+        198,
+        222,
+        222,
+        198,
+        206,
+        198,
+        198,
+        214,
+        254,
+        222,
+        222,
+        124
+      ],
+      "source_start_line": 3255,
+      "rows": 12,
+      "annotated_lines": [
+        {
+          "line": 3256,
+          "text": "       .byte $C6 ; |XX   XX |",
+          "comment": "|XX   XX |"
+        },
+        {
+          "line": 3257,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3258,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3259,
+          "text": "       .byte $C6 ; |XX   XX |",
+          "comment": "|XX   XX |"
+        },
+        {
+          "line": 3260,
+          "text": "       .byte $CE ; |XX  XXX |",
+          "comment": "|XX  XXX |"
+        },
+        {
+          "line": 3261,
+          "text": "       .byte $C6 ; |XX   XX |",
+          "comment": "|XX   XX |"
+        },
+        {
+          "line": 3262,
+          "text": "       .byte $C6 ; |XX   XX |",
+          "comment": "|XX   XX |"
+        },
+        {
+          "line": 3263,
+          "text": "       .byte $D6 ; |XX X XX |",
+          "comment": "|XX X XX |"
+        },
+        {
+          "line": 3265,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3266,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3267,
+          "text": "       .byte $DE ; |XX XXXX |",
+          "comment": "|XX XXXX |"
+        },
+        {
+          "line": 3268,
+          "text": "       .byte $7C ; | XXXXX  |",
+          "comment": "| XXXXX  |"
+        }
+      ]
+    },
+    "BridgeA": {
+      "bytes": [
+        66
+      ],
+      "source_start_line": 3269,
+      "rows": 1,
+      "annotated_lines": [
+        {
+          "line": 3270,
+          "text": "       .byte $42 ; | X    X |",
+          "comment": "| X    X |"
+        }
+      ]
+    },
+    "BridgeB": {
+      "bytes": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        66
+      ],
+      "source_start_line": 3271,
+      "rows": 11,
+      "annotated_lines": [
+        {
+          "line": 3272,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3273,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3274,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3275,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3276,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3277,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3278,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3279,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3280,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3281,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3282,
+          "text": "       .byte $42 ; | X    X |",
+          "comment": "| X    X |"
+        }
+      ]
+    },
+    "ShipB": {
+      "bytes": [
+        0,
+        0,
+        0,
+        252,
+        255,
+        48,
+        16
+      ],
+      "source_start_line": 3283,
+      "rows": 7,
+      "annotated_lines": [
+        {
+          "line": 3284,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3285,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3286,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3287,
+          "text": "       .byte $FC ; |XXXXXX  |",
+          "comment": "|XXXXXX  |"
+        },
+        {
+          "line": 3288,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3289,
+          "text": "       .byte $30 ; |  XX    |",
+          "comment": "|  XX    |"
+        },
+        {
+          "line": 3290,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        }
+      ]
+    },
+    "PlaneA": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        48,
+        79,
+        198,
+        0
+      ],
+      "source_start_line": 3291,
+      "rows": 9,
+      "annotated_lines": [
+        {
+          "line": 3292,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3293,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3294,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3295,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3296,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3297,
+          "text": "       .byte $30 ; |  XX    |",
+          "comment": "|  XX    |"
+        },
+        {
+          "line": 3298,
+          "text": "       .byte $4F ; | X  XXXX|",
+          "comment": "| X  XXXX|"
+        },
+        {
+          "line": 3299,
+          "text": "       .byte $C6 ; |XX   XX |",
+          "comment": "|XX   XX |"
+        },
+        {
+          "line": 3300,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    },
+    "Heli1B": {
+      "bytes": [
+        0,
+        0,
+        0,
+        14,
+        142,
+        255,
+        14,
+        7
+      ],
+      "source_start_line": 3301,
+      "rows": 8,
+      "annotated_lines": [
+        {
+          "line": 3302,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3303,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3304,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3305,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3306,
+          "text": "       .byte $8E ; |X   XXX |",
+          "comment": "|X   XXX |"
+        },
+        {
+          "line": 3307,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3308,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3309,
+          "text": "       .byte $07 ; |     XXX|",
+          "comment": "|     XXX|"
+        }
+      ]
+    },
+    "Heli0A": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        4,
+        255,
+        159,
+        4,
+        7
+      ],
+      "source_start_line": 3310,
+      "rows": 9,
+      "annotated_lines": [
+        {
+          "line": 3311,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3312,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3313,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3314,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3315,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3316,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3317,
+          "text": "       .byte $9F ; |X  XXXXX|",
+          "comment": "|X  XXXXX|"
+        },
+        {
+          "line": 3318,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3319,
+          "text": "       .byte $07 ; |     XXX|",
+          "comment": "|     XXX|"
+        }
+      ]
+    },
+    "ShipA": {
+      "bytes": [
+        0,
+        0,
+        0,
+        124,
+        254,
+        120,
+        16
+      ],
+      "source_start_line": 3320,
+      "rows": 7,
+      "annotated_lines": [
+        {
+          "line": 3321,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3322,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3323,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3324,
+          "text": "       .byte $7C ; | XXXXX  |",
+          "comment": "| XXXXX  |"
+        },
+        {
+          "line": 3325,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3326,
+          "text": "       .byte $78 ; | XXXX   |",
+          "comment": "| XXXX   |"
+        },
+        {
+          "line": 3327,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        }
+      ]
+    },
+    "PlaneB": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        56,
+        255,
+        128
+      ],
+      "source_start_line": 3328,
+      "rows": 8,
+      "annotated_lines": [
+        {
+          "line": 3329,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3330,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3331,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3332,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3333,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3334,
+          "text": "       .byte $38 ; |  XXX   |",
+          "comment": "|  XXX   |"
+        },
+        {
+          "line": 3335,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3336,
+          "text": "       .byte $80 ; |X       |",
+          "comment": "|X       |"
+        }
+      ]
+    },
+    "Heli1A": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        4,
+        255,
+        159,
+        4,
+        28
+      ],
+      "source_start_line": 3337,
+      "rows": 9,
+      "annotated_lines": [
+        {
+          "line": 3338,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3339,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3340,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3341,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3342,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3343,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3344,
+          "text": "       .byte $9F ; |X  XXXXX|",
+          "comment": "|X  XXXXX|"
+        },
+        {
+          "line": 3345,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3346,
+          "text": "       .byte $1C ; |   XXX  |",
+          "comment": "|   XXX  |"
+        }
+      ]
+    },
+    "Heli0B": {
+      "bytes": [
+        0,
+        0,
+        0,
+        14,
+        142,
+        255,
+        14,
+        28
+      ],
+      "source_start_line": 3347,
+      "rows": 8,
+      "annotated_lines": [
+        {
+          "line": 3348,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3349,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3350,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3351,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3352,
+          "text": "       .byte $8E ; |X   XXX |",
+          "comment": "|X   XXX |"
+        },
+        {
+          "line": 3353,
+          "text": "       .byte $FF ; |XXXXXXXX|",
+          "comment": "|XXXXXXXX|"
+        },
+        {
+          "line": 3354,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3355,
+          "text": "       .byte $1C ; |   XXX  |",
+          "comment": "|   XXX  |"
+        }
+      ]
+    },
+    "Explosion1B": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        16,
+        32,
+        64,
+        16
+      ],
+      "source_start_line": 3356,
+      "rows": 8,
+      "annotated_lines": [
+        {
+          "line": 3357,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3358,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3359,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3360,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3361,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        },
+        {
+          "line": 3362,
+          "text": "       .byte $20 ; |  X     |",
+          "comment": "|  X     |"
+        },
+        {
+          "line": 3363,
+          "text": "       .byte $40 ; | X      |",
+          "comment": "| X      |"
+        },
+        {
+          "line": 3364,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        }
+      ]
+    },
+    "Explosion1A": {
+      "bytes": [
+        0,
+        0,
+        0,
+        0,
+        4,
+        2,
+        8,
+        4,
+        0
+      ],
+      "source_start_line": 3365,
+      "rows": 9,
+      "annotated_lines": [
+        {
+          "line": 3366,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3367,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3368,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3369,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3370,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3371,
+          "text": "       .byte $02 ; |      X |",
+          "comment": "|      X |"
+        },
+        {
+          "line": 3372,
+          "text": "       .byte $08 ; |    X   |",
+          "comment": "|    X   |"
+        },
+        {
+          "line": 3373,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3374,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    },
+    "Explosion2B": {
+      "bytes": [
+        0,
+        0,
+        0,
+        32,
+        2,
+        65,
+        32,
+        2,
+        4
+      ],
+      "source_start_line": 3375,
+      "rows": 9,
+      "annotated_lines": [
+        {
+          "line": 3376,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3377,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3378,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3379,
+          "text": "       .byte $20 ; |  X     |",
+          "comment": "|  X     |"
+        },
+        {
+          "line": 3380,
+          "text": "       .byte $02 ; |      X |",
+          "comment": "|      X |"
+        },
+        {
+          "line": 3381,
+          "text": "       .byte $41 ; | X     X|",
+          "comment": "| X     X|"
+        },
+        {
+          "line": 3382,
+          "text": "       .byte $20 ; |  X     |",
+          "comment": "|  X     |"
+        },
+        {
+          "line": 3383,
+          "text": "       .byte $02 ; |      X |",
+          "comment": "|      X |"
+        },
+        {
+          "line": 3384,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        }
+      ]
+    },
+    "Explosion2A": {
+      "bytes": [
+        0,
+        0,
+        0,
+        4,
+        136,
+        16,
+        4,
+        128,
+        16,
+        0,
+        0
+      ],
+      "source_start_line": 3385,
+      "rows": 11,
+      "annotated_lines": [
+        {
+          "line": 3386,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3387,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3388,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3389,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3390,
+          "text": "       .byte $88 ; |X   X   |",
+          "comment": "|X   X   |"
+        },
+        {
+          "line": 3391,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        },
+        {
+          "line": 3392,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3393,
+          "text": "       .byte $80 ; |X       |",
+          "comment": "|X       |"
+        },
+        {
+          "line": 3394,
+          "text": "       .byte $10 ; |   X    |",
+          "comment": "|   X    |"
+        },
+        {
+          "line": 3395,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3396,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    },
+    "HouseB": {
+      "bytes": [
+        0,
+        4,
+        31,
+        14,
+        4,
+        4,
+        0,
+        170,
+        254,
+        124,
+        0
+      ],
+      "source_start_line": 3397,
+      "rows": 11,
+      "annotated_lines": [
+        {
+          "line": 3398,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3399,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3400,
+          "text": "       .byte $1F ; |   XXXXX|",
+          "comment": "|   XXXXX|"
+        },
+        {
+          "line": 3401,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3402,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3403,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3404,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3405,
+          "text": "       .byte $AA ; |X X X X |",
+          "comment": "|X X X X |"
+        },
+        {
+          "line": 3406,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3407,
+          "text": "       .byte $7C ; | XXXXX  |",
+          "comment": "| XXXXX  |"
+        },
+        {
+          "line": 3408,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    },
+    "HouseA": {
+      "bytes": [
+        0,
+        4,
+        14,
+        31,
+        14,
+        4,
+        0,
+        254,
+        170,
+        254,
+        56,
+        0,
+        0,
+        0
+      ],
+      "source_start_line": 3409,
+      "rows": 14,
+      "annotated_lines": [
+        {
+          "line": 3410,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3411,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3412,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3413,
+          "text": "       .byte $1F ; |   XXXXX|",
+          "comment": "|   XXXXX|"
+        },
+        {
+          "line": 3414,
+          "text": "       .byte $0E ; |    XXX |",
+          "comment": "|    XXX |"
+        },
+        {
+          "line": 3415,
+          "text": "       .byte $04 ; |     X  |",
+          "comment": "|     X  |"
+        },
+        {
+          "line": 3416,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3417,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3418,
+          "text": "       .byte $AA ; |X X X X |",
+          "comment": "|X X X X |"
+        },
+        {
+          "line": 3419,
+          "text": "       .byte $FE ; |XXXXXXX |",
+          "comment": "|XXXXXXX |"
+        },
+        {
+          "line": 3420,
+          "text": "       .byte $38 ; |  XXX   |",
+          "comment": "|  XXX   |"
+        },
+        {
+          "line": 3421,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3422,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        },
+        {
+          "line": 3423,
+          "text": "       .byte $00 ; |        |",
+          "comment": "|        |"
+        }
+      ]
+    }
+  },
+  "families": {
+    "Fuel": [
+      "FuelA",
+      "FuelB"
+    ],
+    "Bridge": [
+      "BridgeA",
+      "BridgeB"
+    ],
+    "Ship": [
+      "ShipA",
+      "ShipB"
+    ],
+    "Plane": [
+      "PlaneA",
+      "PlaneB"
+    ],
+    "Heli0": [
+      "Heli0A",
+      "Heli0B"
+    ],
+    "Heli1": [
+      "Heli1A",
+      "Heli1B"
+    ],
+    "House": [
+      "HouseA",
+      "HouseB"
+    ],
+    "Explosion0": [
+      "Explosion0"
+    ],
+    "Explosion1": [
+      "Explosion1A",
+      "Explosion1B"
+    ],
+    "Explosion2": [
+      "Explosion2A",
+      "Explosion2B"
+    ]
+  }
+}

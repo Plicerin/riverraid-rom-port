@@ -1,0 +1,1815 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>River Raid Inspector</title>
+ <style>
+ :root {
+color-scheme: dark;
+--bg: #0b1020;
+--panel: #121933;
+--panel2: #1a2447;
+--text: #e8ecff;
+--muted: #9dacd6;
+--accent: #5cc8ff;
+--accent2: #74f0b8;
+--warn: #ffd166;
+--border: #2e3a69;
+--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+--sans: Inter, system-ui, sans-serif;
+ }
+ body {
+margin: 0;
+font-family: var(--sans);
+background: linear-gradient(180deg, #09101f, #0d1430 45%, #101838);
+color: var(--text);
+ }
+ .wrap {
+max-width: 1440px;
+margin: 0 auto;
+padding: 20px;
+ }
+ h1, h2, h3, p { margin-top: 0; }
+ .note { color: var(--muted); }
+ .grid {
+display: grid;
+grid-template-columns: repeat(12, 1fr);
+gap: 16px;
+ }
+ .panel {
+background: rgba(18, 25, 51, 0.92);
+border: 1px solid var(--border);
+border-radius: 14px;
+padding: 16px;
+box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+ }
+ .sprite-gallery {
+margin: 18px 0 22px;
+padding: 18px;
+border: 1px solid var(--border);
+border-radius: 16px;
+background: rgba(18, 25, 51, 0.92);
+box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+ }
+ .sprite-gallery .note {
+color: var(--muted);
+ }
+ .sprite-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+gap: 14px;
+ }
+ .sprite-card {
+border: 1px solid var(--border);
+border-radius: 14px;
+padding: 12px;
+background: rgba(26, 36, 71, 0.92);
+ }
+ .sprite-card h3 {
+margin-bottom: 8px;
+color: var(--accent2);
+ }
+ .sprite-card pre {
+margin: 0;
+padding: 10px;
+border: 1px solid var(--border);
+border-radius: 8px;
+background: #0a0f20;
+overflow-x: auto;
+font-family: var(--mono);
+font-size: 12px;
+line-height: 1.15;
+ }
+ .controls { grid-column: span 12; }
+ .hud { grid-column: span 5; }
+ .summary { grid-column: span 7; }
+ .world { grid-column: span 8; }
+ .slots { grid-column: span 4; }
+ .detail { grid-column: span 4; }
+ .state { grid-column: span 4; }
+ .memory { grid-column: span 4; }
+ .object { grid-column: span 4; }
+ .section { grid-column: span 4; }
+ .palette { grid-column: span 4; }
+ .addrmap { grid-column: span 12; }
+ .flags { grid-column: span 4; }
+ .joystick { grid-column: span 4; }
+.missile { grid-column: span 4; }
+.sound { grid-column: span 4; }
+.roadblock { grid-column: span 4; }
+.missilestate { grid-column: span 4; }
+.playermove { grid-column: span 4; }
+.playerjet { grid-column: span 4; }
+.slotpreview { grid-column: span 4; }
+.playerjetcompare { grid-column: span 4; }
+.blocklist { grid-column: span 4; }
+.framecnt { grid-column: span 4; }
+.scores { grid-column: span 4; }
+.collision { grid-column: span 4; }
+.mainlooptrace { grid-column: span 4; }
+.dxspeed { grid-column: span 4; }
+.kernelline { grid-column: span 4; }
+.nusizdetail { grid-column: span 4; }
+.sectionprogress { grid-column: span 4; }
+.aliasconflict { grid-column: span 12; }
+.colptr { grid-column: span 4; }
+.colorinspector { grid-column: span 4; }
+.coverage { grid-column: span 4; }
+.fuelbar { grid-column: span 4; }
+.gamemode { grid-column: span 4; }
+.hexedit { grid-column: span 12; }
+.pfcolor { grid-column: span 4; }
+.pfptr { grid-column: span 4; }
+.pfstate { grid-column: span 4; }
+.plyrcolor { grid-column: span 4; }
+.rng { grid-column: span 4; }
+.savedrng { grid-column: span 4; }
+.sectionviz { grid-column: span 8; }
+.shaptr { grid-column: span 4; }
+.slotaddr { grid-column: span 4; }
+.stcolor { grid-column: span 4; }
+ @media (max-width: 1100px) {
+.hud, .summary, .world, .slots, .detail, .state, .memory, .object,
+.section, .palette, .controls, .flags, .joystick, .missile, .roadblock, .missilestate, .playermove, .playerjet, .slotpreview, .playerjetcompare, .blocklist, .framecnt, .scores, .collision, .dxspeed, .kernelline, .nusizdetail, .sectionprogress, .aliasconflict, .colptr, .colorinspector, .coverage, .fuelbar, .gamemode, .hexedit, .mainlooptrace, .pfcolor, .pfptr, .pfstate, .plyrcolor, .rng, .savedrng, .sectionviz, .shaptr, .slotaddr, .sound, .stcolor { grid-column: span 12; }
+.addrmap { grid-column: span 12; }
+ }
+ .row {
+display: flex;
+gap: 16px;
+align-items: center;
+flex-wrap: wrap;
+margin-bottom: 12px;
+ }
+ label { font-weight: 600; }
+ input[type="range"] { width: min(420px, 100%); }
+ input[type="number"], select {
+width: 88px;
+background: #0c1330;
+color: var(--text);
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 6px 8px;
+font: inherit;
+ }
+ button {
+background: var(--accent);
+color: #001320;
+border: 0;
+border-radius: 10px;
+padding: 10px 14px;
+font-weight: 700;
+cursor: pointer;
+ }
+ button.secondary { background: #2a3766; color: var(--text); }
+ .stat-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+gap: 10px;
+ }
+ .stat {
+background: var(--panel2);
+border: 1px solid var(--border);
+border-radius: 10px;
+padding: 10px 12px;
+ }
+ .stat .k {
+color: var(--muted);
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: 0.06em;
+ }
+ .stat .v {
+margin-top: 6px;
+font-family: var(--mono);
+font-size: 17px;
+color: var(--accent2);
+ }
+ canvas {
+width: 100%;
+border: 1px solid var(--border);
+border-radius: 10px;
+image-rendering: pixelated;
+background: #050913;
+display: block;
+ }
+ pre {
+margin: 0;
+padding: 12px;
+overflow: auto;
+background: #0a1022;
+border: 1px solid var(--border);
+border-radius: 10px;
+color: #dfe6ff;
+font-family: var(--mono);
+font-size: 11px;
+line-height: 1.4;
+white-space: pre-wrap;
+word-break: break-word;
+ }
+ .tiny { font-size: 12px; color: var(--muted); }
+ .pill {
+display: inline-block;
+padding: 4px 8px;
+border-radius: 999px;
+background: #22315e;
+color: #d9e5ff;
+margin-right: 8px;
+margin-bottom: 8px;
+font-size: 12px;
+ }
+ table {
+width: 100%;
+border-collapse: collapse;
+font-size: 12px;
+ }
+ th, td {
+border-bottom: 1px solid rgba(46, 58, 105, 0.8);
+padding: 6px 4px;
+text-align: left;
+vertical-align: middle;
+ }
+ th {
+color: var(--muted);
+font-weight: 600;
+position: sticky;
+top: 0;
+background: rgba(18, 25, 51, 0.98);
+ }
+ .table-wrap {
+max-height: 420px;
+overflow: auto;
+border: 1px solid var(--border);
+border-radius: 10px;
+background: #0a1022;
+ }
+ .legend {
+margin-top: 10px;
+color: var(--muted);
+font-size: 11px;
+line-height: 1.5;
+ }
+ .bitmap-chip {
+ display: inline-grid;
+ grid-auto-rows: 1fr;
+ gap: 1px;
+ padding: 4px;
+ background: #08101f;
+ border: 1px solid rgba(46, 58, 105, 0.9);
+ border-radius: 6px;
+ }
+ .bitmap-row {
+ display: grid;
+ gap: 1px;
+ }
+ .bitmap-pixel {
+ width: var(--px, 4px);
+ height: var(--px, 4px);
+ background: rgba(255,255,255,0.08);
+ }
+ .bitmap-pixel.on { background: var(--on, #74f0b8); }
+ .bitmap-stack {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ flex-wrap: wrap;
+ }
+ .bitmap-compare {
+ display: flex;
+ gap: 14px;
+ align-items: flex-start;
+ flex-wrap: wrap;
+ }
+.bitmap-compare-card {
+ display: grid;
+ gap: 6px;
+ justify-items: start;
+ }
+ .bitmap-compare-card.clickable {
+ cursor: pointer;
+ transition: transform 120ms ease, box-shadow 120ms ease;
+ }
+.bitmap-compare-card.clickable:hover {
+ transform: translateY(-1px);
+ box-shadow: 0 0 0 1px rgba(143,182,255,0.35);
+}
+.timeline-sample-card,
+.timeline-linked-card,
+.timeline-selection-status,
+.timeline-primary-destination {
+ scroll-margin-top: 24px;
+}
+.timeline-sample-card,
+.timeline-linked-card {
+ transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.timeline-sample-card:focus-visible,
+.timeline-linked-card:focus-visible {
+ outline: 2px solid rgba(255, 224, 102, 0.9);
+ outline-offset: 2px;
+}
+.timeline-sample-card-active {
+ border-color: rgba(255, 224, 102, 0.5) !important;
+ box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.18), 0 0 24px rgba(255, 224, 102, 0.12);
+ transform: translateY(-1px);
+}
+.timeline-sample-card-spotlight {
+ animation: timelineSpotlightPulse 1.15s ease-out 1;
+ box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.24), 0 0 0 5px rgba(92, 200, 255, 0.12), 0 0 28px rgba(255, 224, 102, 0.18);
+}
+.timeline-sample-active-note {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(255, 224, 102, 0.16);
+ color: #ffe7a8;
+ font-size: 10px;
+ font-weight: 700;
+ letter-spacing: 0.04em;
+ text-transform: uppercase;
+}
+.timeline-sample-spotlight-note,
+.timeline-selection-spotlight-note {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(92, 200, 255, 0.14);
+ color: #b8e9ff;
+ font-size: 10px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-linked-card-active {
+ border-color: rgba(255, 224, 102, 0.42) !important;
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.16);
+}
+.timeline-selection-status {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ margin-bottom: 8px;
+ padding: 8px 10px;
+ border: 1px solid rgba(255, 224, 102, 0.22);
+ border-radius: 10px;
+ background: rgba(255, 224, 102, 0.08);
+}
+.timeline-selection-status-spotlight {
+ box-shadow: 0 0 0 1px rgba(92, 200, 255, 0.22), 0 0 18px rgba(92, 200, 255, 0.10);
+}
+.timeline-primary-destination {
+ display: grid;
+ gap: 10px;
+}
+.timeline-primary-jump-note {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 8px 10px;
+ border: 1px solid rgba(92, 200, 255, 0.28);
+ border-radius: 10px;
+ background: rgba(92, 200, 255, 0.08);
+ box-shadow: inset 0 0 0 1px rgba(92, 200, 255, 0.06);
+ scroll-margin-top: 24px;
+}
+.timeline-primary-jump-note[data-timeline-reveal-visible="true"] {
+ border-color: rgba(255, 224, 102, 0.26);
+ box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.10), 0 0 18px rgba(255, 224, 102, 0.08);
+}
+.timeline-primary-jump-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(92, 200, 255, 0.18);
+ color: #b8e9ff;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-primary-reveal-note {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 8px 10px;
+ border: 1px dashed rgba(255, 224, 102, 0.26);
+ border-radius: 10px;
+ background: rgba(255, 224, 102, 0.06);
+ scroll-margin-top: 24px;
+}
+.timeline-primary-reveal-note[data-timeline-reveal-visible="true"] {
+ border-color: rgba(255, 224, 102, 0.30);
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.12), 0 0 18px rgba(255, 224, 102, 0.08);
+}
+.timeline-primary-reveal-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(255, 224, 102, 0.16);
+ color: #ffe7a8;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-primary-anchor-note {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 8px 10px;
+ border: 1px solid rgba(92, 200, 255, 0.24);
+ border-radius: 10px;
+ background: rgba(19, 27, 48, 0.30);
+ scroll-margin-top: 24px;
+}
+.timeline-primary-anchor-note:focus-visible {
+ outline: 2px solid rgba(92, 200, 255, 0.85);
+ outline-offset: 2px;
+}
+.timeline-primary-anchor-note[data-timeline-reveal-visible="true"] {
+ border-color: rgba(255, 224, 102, 0.24);
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.10), 0 0 18px rgba(255, 224, 102, 0.08);
+}
+.timeline-primary-anchor-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(92, 200, 255, 0.16);
+ color: #b8e9ff;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-primary-strip-note {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 8px 10px;
+ border: 1px dashed rgba(116, 240, 184, 0.24);
+ border-radius: 10px;
+ background: rgba(116, 240, 184, 0.05);
+ scroll-margin-top: 24px;
+}
+.timeline-primary-strip-note:focus-visible {
+ outline: 2px solid rgba(116, 240, 184, 0.75);
+ outline-offset: 2px;
+}
+.timeline-primary-strip-note[data-timeline-reveal-visible="true"] {
+ border-color: rgba(255, 224, 102, 0.24);
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.10), 0 0 18px rgba(255, 224, 102, 0.08);
+}
+.timeline-primary-strip-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(116, 240, 184, 0.16);
+ color: #c9ffe7;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-reveal-sequence-note {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 8px 10px;
+ border: 1px solid rgba(116, 240, 184, 0.22);
+ border-radius: 10px;
+ background: rgba(116, 240, 184, 0.06);
+}
+.timeline-reveal-sequence-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(116, 240, 184, 0.16);
+ color: #c9ffe7;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+}
+.timeline-reveal-sequence-step {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ border: 1px solid rgba(116, 240, 184, 0.2);
+ background: rgba(19, 27, 48, 0.3);
+ color: var(--muted);
+ font-size: 11px;
+}
+.timeline-reveal-sequence-step[data-timeline-reveal-step-active="true"] {
+ border-color: rgba(255, 224, 102, 0.4);
+ background: rgba(255, 224, 102, 0.14);
+ color: #ffe7a8;
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.12);
+}
+.timeline-reveal-viewport-note {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ border: 1px solid rgba(92, 200, 255, 0.20);
+ background: rgba(19, 27, 48, 0.34);
+ color: var(--muted);
+ font-size: 11px;
+}
+.timeline-reveal-focus-note {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ border: 1px solid rgba(116, 240, 184, 0.22);
+ background: rgba(19, 27, 48, 0.34);
+ color: var(--muted);
+ font-size: 11px;
+}
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="confirmed"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="anchor-band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="stack-band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="strip-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="detail-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="recentered"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="jump-note-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="status-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="context-nudged"] {
+ border-color: rgba(255, 224, 102, 0.26);
+ background: rgba(255, 224, 102, 0.12);
+ color: #ffe7a8;
+}
+.timeline-reveal-focus-note[data-timeline-reveal-focus-note="confirmed"],
+.timeline-reveal-focus-note[data-timeline-reveal-focus-note="returned"] {
+ border-color: rgba(255, 224, 102, 0.26);
+ background: rgba(255, 224, 102, 0.12);
+ color: #ffe7a8;
+}
+.timeline-reveal-focus-note[data-timeline-reveal-focus-note="returned"] {
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.12);
+}
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="anchor-band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="stack-band-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="strip-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="detail-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="recentered"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="jump-note-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="status-nudged"],
+.timeline-reveal-viewport-note[data-timeline-reveal-viewport-note="context-nudged"] {
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.12);
+}
+.timeline-sample-strip {
+ position: relative;
+}
+.timeline-sample-card[data-timeline-reveal-card-band-visible="true"] {
+ box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.14), 0 0 0 1px rgba(116, 240, 184, 0.12);
+}
+.timeline-primary-anchor-note[data-timeline-reveal-focus-active="true"],
+.timeline-sample-card[data-timeline-reveal-focus-active="true"] {
+ box-shadow: 0 0 0 2px rgba(116, 240, 184, 0.22), 0 0 0 6px rgba(92, 200, 255, 0.10), 0 0 28px rgba(116, 240, 184, 0.12);
+}
+.timeline-selection-status[data-timeline-reveal-stage-active="true"],
+.timeline-primary-destination[data-timeline-reveal-stage-active="true"],
+.timeline-sample-card[data-timeline-reveal-stage-active="true"] {
+ box-shadow: 0 0 0 1px rgba(116, 240, 184, 0.22), 0 0 22px rgba(116, 240, 184, 0.10);
+}
+.timeline-sample-card[data-timeline-reveal-anchor="true"] {
+ box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.24), 0 0 0 6px rgba(255, 224, 102, 0.10), 0 0 30px rgba(255, 224, 102, 0.16);
+}
+.timeline-selection-pill {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 999px;
+ background: rgba(255, 224, 102, 0.16);
+ color: #ffe7a8;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.02em;
+}
+.family-transition-card {
+ min-width: min(320px, 100%);
+}
+.family-transition-meta-row {
+ margin-top: 2px;
+}
+.family-transition-detail-grid {
+ display: grid;
+ grid-template-columns: repeat(2, minmax(0, 1fr));
+ gap: 10px;
+ width: 100%;
+}
+.family-transition-detail-lane {
+ display: grid;
+ gap: 4px;
+ width: 100%;
+ padding: 8px;
+ border-radius: 10px;
+ border: 1px solid rgba(255, 255, 255, 0.08);
+ background: rgba(10, 16, 34, 0.72);
+}
+.family-transition-detail-label {
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+ color: #b8e9ff;
+}
+.family-transition-card-active .family-transition-detail-lane {
+ border-color: rgba(255, 224, 102, 0.26);
+ box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.08);
+}
+.family-transition-card-active {
+ box-shadow: 0 0 0 1px rgba(255, 224, 102, 0.20), 0 0 18px rgba(255, 224, 102, 0.10);
+}
+.multi-wrap-compare-card {
+ min-width: min(320px, 100%);
+}
+.multi-wrap-compare-card-active {
+ box-shadow: 0 0 0 1px rgba(197, 155, 255, 0.22), 0 0 20px rgba(197, 155, 255, 0.12);
+}
+.multi-wrap-compare-grid {
+ display: grid;
+ grid-template-columns: repeat(2, minmax(0, 1fr));
+ gap: 10px;
+ width: 100%;
+}
+.multi-wrap-compare-side {
+ display: grid;
+ gap: 4px;
+ width: 100%;
+ padding: 8px;
+ border-radius: 10px;
+ border: 1px solid rgba(255, 255, 255, 0.08);
+ background: rgba(10, 16, 34, 0.72);
+}
+.multi-wrap-compare-side-selected {
+ border-color: rgba(255, 224, 102, 0.34);
+ box-shadow: inset 0 0 0 1px rgba(255, 224, 102, 0.12);
+ background: rgba(255, 224, 102, 0.06);
+}
+.multi-wrap-compare-side-label {
+ font-weight: 700;
+ letter-spacing: 0.03em;
+ text-transform: uppercase;
+ color: #d9c5ff;
+}
+@media (max-width: 780px) {
+ .family-transition-detail-grid,
+ .multi-wrap-compare-grid {
+  grid-template-columns: 1fr;
+ }
+}
+@keyframes timelineSpotlightPulse {
+ 0% {
+  transform: translateY(-1px) scale(0.995);
+  box-shadow: 0 0 0 0 rgba(92, 200, 255, 0.26), 0 0 0 2px rgba(255, 224, 102, 0.18), 0 0 12px rgba(255, 224, 102, 0.10);
+ }
+ 45% {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 0 0 6px rgba(92, 200, 255, 0.10), 0 0 0 2px rgba(255, 224, 102, 0.26), 0 0 30px rgba(255, 224, 102, 0.18);
+ }
+ 100% {
+  transform: translateY(-1px) scale(1);
+  box-shadow: 0 0 0 2px rgba(255, 224, 102, 0.18), 0 0 0 5px rgba(92, 200, 255, 0.12), 0 0 28px rgba(255, 224, 102, 0.18);
+ }
+}
+.parity-badge {
+ display: inline-block;
+ padding: 3px 8px;
+ border-radius: 999px;
+ font-size: 11px;
+ font-weight: 700;
+ letter-spacing: 0.02em;
+ background: rgba(92, 200, 255, 0.16);
+ color: #bfeeff;
+ border: 1px solid rgba(92, 200, 255, 0.35);
+ }
+ .parity-badge.odd {
+ background: rgba(255, 209, 102, 0.16);
+ color: #ffe7a8;
+ border-color: rgba(255, 209, 102, 0.35);
+ }
+ .world-wrap {
+ position: relative;
+ }
+ .canvas-tooltip {
+ position: absolute;
+ pointer-events: none;
+ background: rgba(10, 16, 34, 0.96);
+ color: #dfe6ff;
+ border: 1px solid var(--border);
+ border-radius: 8px;
+ padding: 8px 10px;
+ font-size: 11px;
+ font-family: var(--mono);
+ max-width: 280px;
+ box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+ z-index: 4;
+ white-space: pre-wrap;
+ }
+ .canvas-tooltip.pinned {
+ border-color: #ffd166;
+ box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.28), 0 8px 24px rgba(0,0,0,0.3);
+ }
+ .coverage-grid {
+ display:grid;
+ grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+ gap: 10px;
+ }
+ .coverage-stat {
+ border: 1px solid var(--border);
+ border-radius: 10px;
+ padding: 10px;
+ background: rgba(19,27,48,0.65);
+ }
+ textarea.bitmap-export {
+ width: 100%;
+ min-height: 110px;
+ resize: vertical;
+ background: #0a1022;
+ color: #dfe6ff;
+ border: 1px solid var(--border);
+ border-radius: 10px;
+ padding: 10px;
+ font-family: var(--mono);
+ font-size: 11px;
+ line-height: 1.4;
+ box-sizing: border-box;
+ }
+ .tiny-button {
+ background: #1a2740;
+ color: #dfe6ff;
+ border: 1px solid var(--border);
+ border-radius: 8px;
+ padding: 4px 8px;
+ font-size: 11px;
+ font-family: var(--mono);
+ cursor: pointer;
+ }
+ .tiny-button.copied {
+ background: #214d36;
+ color: #d6ffe9;
+ }
+ .tiny-button.active {
+ background: #3f3216;
+ color: #ffe7a8;
+ border-color: rgba(255, 209, 102, 0.45);
+ }
+ .compare-head {
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ margin:10px 0 6px;
+ }
+ .chip-label {
+ display:inline-block;
+ padding:2px 6px;
+ border-radius:999px;
+ font-size:10px;
+ font-weight:700;
+ color:#08101f;
+ }
+ .copy-status {
+ font-size: 11px;
+ color: var(--muted);
+ min-height: 1.2em;
+ }
+ .copy-status.ok { color: #8df0b7; }
+ .copy-status.fail { color: #ffb4a6; }
+ .meta-chip-row {
+ display:flex;
+ flex-wrap:wrap;
+ gap:6px;
+ margin-top:4px;
+ }
+ .meta-chip {
+ display:inline-block;
+ padding:2px 6px;
+ border-radius:999px;
+ font-size:10px;
+ font-family:var(--mono);
+ background:#182545;
+ color:#dfe6ff;
+ border:1px solid rgba(143,182,255,0.2);
+ }
+ .meta-chip.warn {
+ background:#3a2d13;
+ color:#ffe7a8;
+ border-color:rgba(255, 209, 102, 0.35);
+ }
+ .mono { font-family: var(--mono); }
+ tr.selected { background: rgba(92, 200, 255, 0.12); }
+ .color-swatch {
+display: inline-block;
+width: 20px;
+height: 20px;
+border-radius: 4px;
+border: 1px solid rgba(255,255,255,0.15);
+vertical-align: middle;
+margin-right: 6px;
+ }
+ .addr-row {
+display: grid;
+grid-template-columns: 70px 70px 50px 1fr 1fr 50px;
+gap: 4px 12px;
+padding: 4px 0;
+border-bottom: 1px solid rgba(46,58,105,0.4);
+font-family: var(--mono);
+font-size: 11px;
+ }
+ .addr-row .label { color: var(--accent); font-weight: 600; }
+ .addr-row .addr { color: var(--muted); }
+ .addr-row .comment { color: var(--text); opacity: 0.7; }
+ .addr-row .alias { color: var(--warn); font-style: italic; }
+ .addr-row .cond { color: #f25f5c; }
+ .section-block {
+display: grid;
+grid-template-columns: repeat(16, 1fr);
+gap: 2px;
+margin-bottom: 8px;
+ }
+ .section-block .blk {
+aspect-ratio: 1;
+border-radius: 3px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 9px;
+font-family: var(--mono);
+color: #fff;
+ }
+ .kernel-bar {
+display: flex;
+height: 24px;
+border-radius: 4px;
+overflow: hidden;
+margin-bottom: 8px;
+ }
+ .kernel-bar .seg {
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 10px;
+font-family: var(--mono);
+color: #fff;
+ }
+ /* ── Bit-flag editor ─────────────────────────────────── */
+ .flag-group { margin-bottom: 14px; }
+ .flag-group h3 { font-size: 13px; margin: 0 0 6px 0; color: var(--accent); }
+ .flag-grid {
+display: grid;
+grid-template-columns: repeat(8, 1fr);
+gap: 4px;
+ }
+ .flag-cell {
+background: var(--panel2);
+border: 1px solid var(--border);
+border-radius: 6px;
+padding: 6px 4px;
+text-align: center;
+font-size: 10px;
+font-family: var(--mono);
+ }
+ .flag-cell.on { background: #2a5f3a; border-color: #4a9; }
+ .flag-cell .bit-num { color: var(--muted); font-size: 9px; }
+ .flag-cell .bit-name { color: var(--text); margin: 2px 0; }
+ .flag-cell input[type="checkbox"] {
+accent-color: var(--accent2);
+width: 16px;
+height: 16px;
+cursor: pointer;
+ }
+ /* ── Joystick decoder ────────────────────────────────── */
+ .joy-pad {
+display: grid;
+grid-template-columns: repeat(3, 48px);
+grid-template-rows: repeat(3, 48px);
+gap: 4px;
+justify-content: center;
+margin: 8px auto;
+ }
+ .joy-btn {
+background: var(--panel2);
+border: 1px solid var(--border);
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 18px;
+font-weight: 700;
+color: var(--text);
+cursor: pointer;
+user-select: none;
+ }
+ .joy-btn.active { background: #3a5f2a; border-color: var(--accent2); color: var(--accent2); }
+ .joy-btn.empty { visibility: hidden; }
+ .joy-hex { text-align: center; font-family: var(--mono); color: var(--warn); font-size: 13px; margin-top: 6px; }
+ /* ── Missile envelope ─────────────────────────────────── */
+ .missile-ruler {
+position: relative;
+height: 32px;
+background: var(--panel2);
+border: 1px solid var(--border);
+border-radius: 6px;
+margin: 8px 0;
+ }
+ .missile-ruler .zone {
+position: absolute;
+top: 0;
+height: 100%;
+background: rgba(116, 240, 184, 0.12);
+border-left: 2px dashed var(--accent2);
+border-right: 2px dashed var(--accent2);
+ }
+ .missile-ruler .current {
+position: absolute;
+top: 2px;
+width: 3px;
+height: calc(100% - 4px);
+background: #ff6b6b;
+border-radius: 2px;
+ }
+ .missile-ruler .jet-line {
+position: absolute;
+top: 2px;
+width: 3px;
+height: calc(100% - 4px);
+background: #ffe066;
+border-radius: 2px;
+ }
+ .missile-labels {
+display: flex;
+justify-content: space-between;
+font-size: 10px;
+font-family: var(--mono);
+color: var(--muted);
+ }
+ /* ── Scanline/band diagram in world canvas area ──────── */
+ .band-legend {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+font-size: 11px;
+font-family: var(--mono);
+color: var(--muted);
+margin-top: 6px;
+ }
+ .band-legend .swatch {
+display: inline-block;
+width: 12px;
+height: 12px;
+border-radius: 3px;
+vertical-align: middle;
+margin-right: 3px;
+ }
+ </style>
+</head>
+<body>
+ <div class="wrap">
+ <h1>River Raid visible excerpt browser harness</h1>
+ <p class="note">Abstract slot/shape inspector and section-structure visualizer. Renders only what the local excerpt exposes: reset effects, zero-page memory, fuel-display ball calculation, the six visible slot arrays, NTSC color constants, section/block structure, kernel timing, and address layout. Does not claim full scene reconstruction, complete sprite-pointer routing, or gameplay resolution.</p>
+ <section class="sprite-gallery" id="extractedSpriteGallery">
+  <h2>ROM-backed extracted sprite cards</h2>
+  <p class="note">Extracted shape and HUD glyph bitmaps collected from the ROM-backed reports and appended here for direct inspection.</p>
+  <div class="sprite-grid">
+   <div class="sprite-card">
+    <h3>P0 jet variant</h3>
+    <pre>········
+········
+········
+········
+········
+··█·█·█·
+··█████·
+···███··
+····█···
+·█··█··█
+·██·█·██
+·███████
+·███████
+··█████·
+···███··
+····█···
+····█···
+····█···</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_PLANE shape</h3>
+    <pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_HELI0 shape</h3>
+    <pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_BRIDGE shape</h3>
+    <pre>████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+·█····█·</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_FUEL shape</h3>
+    <pre>███████·
+██·████·
+██·████·
+███████·
+██·████·
+██·████·
+███████·
+██·█·██·
+███████·
+██·████·
+██·████·
+·█████··</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>Score digit 9</h3>
+    <pre>··████··
+·█···██·
+·····██·
+··█████·
+·██··██·
+·██··██·
+·██··██·
+··████··</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>Score digit 4</h3>
+    <pre>····██··
+····██··
+····██··
+·██████·
+·█··██··
+··█·██··
+···███··
+····██··</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>Copyright / Activision strip</h3>
+    <pre>········ ········ █·█·██·█ ·█·█···· █·███·█· ███·█··█
+········ ········ █·█·█··█ ·█·██··· █···█·█· █·█·█·██
+········ ········ ███·█··█ ·█·███·· █·███·█· █·█·████
+········ ········ █·█·█··█ ·█·█·██· █·█···█· █·█·██·█
+········ ········ ███·██·█ ·█·█··██ ··███·█· ███·█··█
+········ ········ ·█·····█ ···█···█ █······· ········
+········ ········ ····████ ████···· ███████· ········
+········ ········ ········ ········ ········ ········
+········ ·█···███ ······██ █······· ········ ········
+████·███ ·█·····█ ········ █······· ········ ········
+█··█·█·█ ·███·███ ·█··█·██ █·█·█·█· ···█···█ ·███·███
+█····███ ·█·█·█·█ ·█··█·█· █·█·█·█· ···█···█ ·█·█·█··
+█······· ·███·█·█ ·██·█·██ █·███·█· ···█·███ ·███·███
+█··█···· ········ ········ ··█···█· ···█·█·█ ·█·█···█
+████···· ········ ····█··· ··█··███ ···█·███ ·███·███
+········ ········ ········ ······█· ········ ········</pre>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_SHIP composite silhouette</h3>
+    <pre>········
+········
+········
+██████··
+████████
+·████···
+···█····</pre>
+    <p class="note">Combined OR silhouette from ShipA $F3A2 / ShipB $F381.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>HUD extra-life jet icon</h3>
+    <pre>········
+········
+········
+········
+········
+··█·█·█·
+··█████·
+···███··
+····█···
+·█··█··█
+·██·█·██
+·███████
+·███████
+··█████·
+···███··
+····█···
+····█···
+····█···</pre>
+    <p class="note">HUD life icon, same JetStraight glyph family, CPU $FCA2.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>HUD lives digit 2</h3>
+    <pre>·██████·
+·██·····
+·██·····
+··████··
+·····██·
+·····██·
+·█···██·
+··████··</pre>
+    <p class="note">HUD-digit candidate from the visible crop, CPU $FB10; kept as a sprite-card match hint, not excerpt-proven live HUD state.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>ID_HOUSE composite silhouette</h3>
+    <pre>········
+·····█··
+···█████
+···█████
+····███·
+·····█··
+········
+███████·
+███████·
+███████·
+··███···
+········
+········
+········</pre>
+    <p class="note">Combined OR silhouette from HouseA $F3F2 / HouseB $F3E7.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>Explosion1</h3>
+    <pre>········
+········
+········
+········
+···█·█··
+··█···█·
+·█··█···
+···█·█··
+········</pre>
+    <p class="note">Combined OR silhouette from Explosion1A $F3CA / Explosion1B $F3C2.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>Explosion2</h3>
+    <pre>········
+········
+········
+··█··█··
+█···█·█·
+·█·█···█
+··█··█··
+█·····█·
+···█·█··
+········
+········</pre>
+    <p class="note">Combined OR silhouette from Explosion2A $F3DC / Explosion2B $F3D3.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>Explosion0</h3>
+    <pre>········
+········
+········
+········
+········
+········
+········
+········
+········
+········
+········
+········
+········</pre>
+    <p class="note">Explosion0 at $F310 is an all-zero blank frame.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>Explosion3</h3>
+    <pre>········
+········
+········
+········
+···█·█··
+··█···█·
+·█··█···
+···█·█··
+········</pre>
+    <p class="note">shapePtr1a/b tables map Explosion3 to the same Explosion1A/1B pointers, so its extracted bitmap matches Explosion1.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>ShipA</h3>
+    <pre>········
+········
+········
+·█████··
+███████·
+·████···
+···█····</pre>
+    <p class="note">ShipA at $F3A2.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>ShipB</h3>
+    <pre>········
+········
+········
+██████··
+████████
+··██····
+···█····</pre>
+    <p class="note">ShipB at $F381.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>HouseA</h3>
+    <pre>········
+·····█··
+····███·
+···█████
+····███·
+·····█··
+········
+███████·
+█·█·█·█·
+███████·
+··███···
+········
+········
+········</pre>
+    <p class="note">HouseA at $F3F2.</p>
+   </div>
+   <div class="sprite-card">
+    <h3>HouseB</h3>
+    <pre>········
+·····█··
+···█████
+····███·
+·····█··
+·····█··
+········
+█·█·█·█·
+███████·
+·█████··
+········</pre>
+    <p class="note">HouseB at $F3E7.</p>
+   </div>
+  </div>
+ </section>
+ <div class="grid">
+
+ <section class="panel controls">
+ <h2>Controls</h2>
+ <div class="row">
+ <label for="fuelHi">fuelHi</label>
+ <input id="fuelHi" type="range" min="0" max="255" value="183" />
+ <span id="fuelHiValue" class="mono"></span>
+ </div>
+ <div class="row">
+ <label for="playerX">playerX</label>
+ <input id="playerX" type="number" min="0" max="159" value="80" />
+ <label for="missileX">missileX</label>
+ <input id="missileX" type="number" min="0" max="159" value="96" />
+ <label for="missileY">missileY</label>
+ <input id="missileY" type="number" min="0" max="160" value="48" />
+ </div>
+ <div class="row">
+ <label for="joyByte">joystick</label>
+ <input id="joyByte" type="number" min="0" max="255" value="0" />
+ <label for="frameCnt">frameCnt</label>
+ <input id="frameCnt" type="number" min="0" max="255" value="0" />
+ <label for="frameSpeed">ms/frame</label>
+ <input id="frameSpeed" type="number" min="50" max="2000" step="50" value="250" />
+ <button id="prevFrame" class="secondary">Back frame</button>
+<button id="nextFrame" class="secondary">Advance loop</button>
+<button id="autoFrame" class="secondary">Auto loop: off</button>
+ <button id="fireMissile" class="secondary">Fire missile</button>
+ <button id="applyReset">Apply visible reset logic</button>
+ <button id="randomizeFuel" class="secondary">Random fuelHi</button>
+ <button id="clearSlots" class="secondary">Clear slot arrays</button>
+ </div>
+ <div class="tiny">Safe scope: six visible slots, declared zero-page bytes, known shape IDs, known flags, player/missile coordinates, the exact visible fuel formula <span class="mono">(fuelHi >> 3) + 69</span>, section/block structure, NTSC color decode, kernel timing, ROM-backed bitmaps for the known shape IDs shown here, including even/odd frame A/B sprite variants driven by <span class="mono">frameCnt</span>, plus an excerpt-limited loop helper for frame/RNG/countdown/playerX stepping. Not safe: full scene synthesis, PF pattern decoding, resolved collision behavior, or a full renderer.</div>
+ </section>
+
+ <section class="panel hud">
+ <h2>Fuel display preview</h2>
+ <canvas id="hudCanvas" width="640" height="180"></canvas>
+ </section>
+
+ <section class="panel summary">
+ <h2>Visible excerpt summary</h2>
+ <div class="stat-grid" id="summaryStats"></div>
+ </section>
+
+ <section class="panel world">
+ <h2>Abstract slot / shape / scanline inspector</h2>
+ <div class="world-wrap">
+ <canvas id="worldCanvas" width="720" height="600"></canvas>
+ <div id="worldHoverViz" class="canvas-tooltip" hidden></div>
+ </div>
+ <div class="band-legend" id="bandLegend"></div>
+ <div class="legend" id="worldLegend"></div>
+ </section>
+
+ <section class="panel detail">
+ <h2>Selected world row</h2>
+ <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+  <button id="prevWorldRow" class="secondary">Prev row</button>
+  <button id="nextWorldRow" class="secondary">Next row</button>
+  <button id="jumpCurrentTail" class="secondary">Jump to current-tail</button>
+  <button id="jumpNextHead" class="secondary">Jump to next-head</button>
+  <button id="clearWorldPin" class="secondary">Clear row pin</button>
+ </div>
+ <div id="worldRowViz"></div>
+ </section>
+
+ <section class="panel detail">
+ <h2>Composite row strip</h2>
+ <div id="compositeRowsViz"></div>
+ </section>
+
+ <section class="panel detail">
+ <h2>Scroll / seam detail</h2>
+ <div id="seamScrollViz"></div>
+ </section>
+
+ <section class="panel detail">
+ <h2>Future seam timeline</h2>
+ <div id="seamTimelineViz"></div>
+ </section>
+
+ <section class="panel slots">
+ <h2>Editable slot arrays</h2>
+ <div class="table-wrap" id="slotEditor"></div>
+ </section>
+
+ <section class="panel detail">
+ <h2>Selected slot detail</h2>
+ <pre id="slotDetail"></pre>
+ </section>
+
+ <section class="panel slotpreview">
+ <h2>Selected slot sprite preview</h2>
+ <div id="slotPreviewViz"></div>
+ </section>
+
+ <section class="panel playerjet">
+ <h2>P0 jet bitmap variant</h2>
+ <div id="playerJetViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>P0 jet bitmap A/B compare</h2>
+ <div id="playerJetCompareViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>Current live sprite decisions</h2>
+ <div id="spriteDecisionViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>Explosion family compare</h2>
+ <div id="explosionFamilyViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>Playfield pattern reference</h2>
+ <div id="pfPatternViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>Known ROM address coverage</h2>
+ <div id="romCoverageViz"></div>
+ </section>
+
+ <section class="panel playerjetcompare">
+ <h2>ROM / extract provenance</h2>
+ <div id="provenanceViz"></div>
+ </section>
+
+ <section class="panel state">
+ <h2>Named zero-page snapshot</h2>
+ <pre id="namedState"></pre>
+ </section>
+
+ <section class="panel memory">
+ <h2>Zero-page memory dump</h2>
+ <pre id="memoryDump"></pre>
+ </section>
+
+ <section class="panel object">
+ <h2>Slot/shape-state mirror</h2>
+ <div>
+ <span class="pill">riverraid_port.js slot/state model</span>
+ <span class="pill">resetAndInit()</span>
+ <span class="pill">stubs preserved</span>
+ <span class="pill">abstract browser inspector</span>
+ </div>
+ <pre id="objectState"></pre>
+ </section>
+
+ <section class="panel section">
+ <h2>Section / block structure</h2>
+ <div id="sectionViz"></div>
+ <pre id="sectionState"></pre>
+ </section>
+
+ <section class="panel palette" id="mainLoopEntryPanel">
+ <h2>MainLoop entry inspector</h2>
+ <div class="tiny">State captured at the top of MainLoop: LDX #4, LDA fuelHi, 3x LSR, ADC #69, JSR SetPosX</div>
+ <div id="mainLoopEntryViz"></div>
+ </section>
+
+ <section class="panel palette" id="sectionCountdownPanel">
+ <h2>Section countdown</h2>
+ <div class="tiny">sectionBlock countdown uses raw values 16..1; value 1 is the bridge sentinel and sectionEnd=0 is the transition sentinel. Derived from ZP-VARIABLES.</div>
+ <div id="sectionCountdownViz"></div>
+ </section>
+
+ <section class="panel palette">
+ <h2>NTSC color palette</h2>
+ <canvas id="paletteCanvas" width="320" height="180"></canvas>
+ <div class="legend" id="paletteLegend"></div>
+ </section>
+
+ <section class="panel addrmap">
+ <h2>Zero-page address map</h2>
+ <div style="margin-bottom:6px">
+ <label style="font-size:12px;color:var(--muted)">Search: <input id="addrMapFilter" type="text" placeholder="field name or $hex" style="background:var(--bg);color:var(--fg);border:1px solid var(--border);padding:2px 6px;font-family:monospace;font-size:12px;width:160px"></label>
+ </div>
+ <div class="addr-row" style="border-bottom: 2px solid var(--border);">
+ <div class="addr">Addr</div>
+ <div class="addr">End</div>
+ <div>Len</div>
+ <div class="label">Label</div>
+ <div class="comment">Comment</div>
+ <div>Aliases</div>
+ </div>
+ <div id="addressMapBody" style="max-height: 400px; overflow: auto;"></div>
+ </section>
+
+ <section class="panel flags" id="flagsPanel">
+ <h2>Bit-flag editor</h2>
+ <div id="flagEditor"></div>
+ </section>
+
+ <section class="panel joystick" id="joystickPanel">
+ <h2>Joystick input decoder</h2>
+ <div id="joystickViz"></div>
+ </section>
+
+ <section class="panel missile" id="missilePanel">
+ <h2>Missile envelope</h2>
+ <div id="missileViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="soundPanel">
+ <h2>Sound ZP fields ($F8-$FB)</h2>
+ <div class="tiny">Sound effect fields declared in excerpt. TIA AUDC/AUDF/AUDV writes NOT in excerpt.</div>
+ <div id="soundViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="sectionEndPanel">
+ <h2>Section end ($8A)</h2>
+ <div class="tiny">sectionEnd=0 marks end of section. From excerpt ZP-VARIABLES.</div>
+ <div id="sectionEndViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="playerSwapPanel">
+ <h2>Variation/delay/player bytes ($80,$81,$F4)</h2>
+ <div class="tiny">gameVariation, gameDelay, and player byte are declared in ZP-VARIABLES. Byte values are surfaced directly; swap/control logic is NOT in excerpt.</div>
+ <div id="playerSwapViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="posYLoPanel">
+ <h2>posYLo ($8C)</h2>
+ <div class="tiny">Low value of blockOffset. From excerpt ZP-VARIABLES.</div>
+ <div id="posYLoViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="prevPF1PatIdPanel">
+ <h2>prevPF1PatId ($88)</h2>
+ <div class="tiny">Previous block PF pattern ID. From excerpt ZP-VARIABLES.</div>
+ <div id="prevPF1PatIdViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="bridgeExploPanel">
+ <h2>bridgeExplode byte ($8D)</h2>
+ <div class="tiny">bridgeExplode declared byte from excerpt ZP-VARIABLES. Trigger/decrement logic is not visible in the excerpt.</div>
+ <div id="bridgeExploViz"></div>
+ </section>
+
+ <section class="panel rng" id="rngPanel">
+ <h2>RNG 16-bit state</h2>
+ <div id="rngViz"></div>
+ </section>
+
+ <section class="panel blocklist" id="blockListPanel">
+ <h2>Block flags ($8E..$93)</h2>
+ <div class="tiny">All 6 blockLst slot flags decoded. From excerpt ZP-VARIABLES.</div>
+ <div id="blockListViz"></div>
+ </section>
+
+ <section class="panel framecnt" id="frameCntPanel">
+ <h2>Frame counter ($82)</h2>
+ <div id="frameCntViz"></div>
+ </section>
+
+ <section class="panel dxspeed" id="dxSpeedPanel">
+ <h2>dXSpeed ($87)</h2>
+ <div class="tiny">x-acceleration byte from excerpt ZP-VARIABLES. Physics NOT in excerpt.</div>
+ <div id="dxSpeedViz"></div>
+ </section>
+
+ <section class="panel scores" id="scorePtrsPanel">
+ <h2>Score pointers ($CD / $DD)</h2>
+ <div class="tiny">scorePtr1 (12B) and scorePtr2 (11B) read for inspection. SetScorePtrs NOT in excerpt.</div>
+ <div id="scorePtrsViz"></div>
+ </section>
+
+ <section class="panel scores" id="scorePtr2AliasesPanel">
+ <h2>scorePtr2 alias bytes ($DE/$E0/$E2/$E4/$E6)</h2>
+ <div class="tiny">Kernel-temporary alias-byte view over scorePtr2 shared addresses named by excerpt comments: blockNum, reflect0, hitEnemyIdx, PFCrashFlag, and missileFlag.</div>
+ <div id="scorePtr2AliasesViz"></div>
+ </section>
+
+ <section class="panel gamemode" id="gameModePanel">
+ <h2>Game mode stepper</h2>
+ <div id="gameModeViz"></div>
+ </section>
+
+ <section class="panel colorinspector" id="colorInspectorPanel">
+ <h2>NTSC color inspector</h2>
+ <div style="margin-bottom:6px;font-size:12px;color:var(--muted)">Click any color swatch below to decode it</div>
+ <div id="colorInspector"></div>
+ </section>
+
+ <section class="panel aliasconflict" id="aliasConflictPanel">
+ <h2>Address alias conflicts</h2>
+ <div class="tiny">ZP addresses shared by multiple field names (from ZP-VARIABLES aliases in the excerpt)</div>
+ <div id="aliasConflictViz"></div>
+ </section>
+
+ <section class="panel coverage" id="coveragePanel">
+ <h2>Excerpt coverage map</h2>
+ <div class="tiny">Which zero-page fields have visible code vs. declaration-only. Derived from the ASM excerpt.</div>
+ <div id="coverageViz"></div>
+ </section>
+
+ <section class="panel pfstate" id="pfStatePanel">
+ <h2>PF_State bit decoder ($89)</h2>
+ <div class="tiny">Declared PF_State bits from excerpt constants: b7 ISLAND_FLAG and b6 CHANGE_FLAG. This panel surfaces the raw bits only.</div>
+ <div id="pfStateViz"></div>
+ </section>
+
+ <section class="panel roadblock" id="roadBlockPanel">
+ <h2>roadBlock / temp2 alias byte ($ED)</h2>
+ <div class="tiny">roadBlock is the temp2 alias from excerpt ZP-VARIABLES. Bit 7 is surfaced only as the PF-road bit for this inspector; code that sets the bit is NOT in the excerpt.</div>
+ <div id="roadBlockViz"></div>
+ </section>
+
+ <section class="panel fuelbar" id="fuelBarPanel">
+ <h2>Fuel meter</h2>
+ <div class="tiny">Combined fuelHi:fuelLo as percentage. Drain/fill mechanics not visible in excerpt.</div>
+ <canvas id="fuelBarCanvas" width="640" height="48"></canvas>
+ <div id="fuelBarInfo"></div>
+ </section>
+
+ <section class="panel fuelbar" id="fuelLoPanel">
+ <h2>fuelLo ($B8)</h2>
+ <div class="tiny">Low byte of 16-bit fuel counter, paired with fuelHi at $B7. Drain/fill logic NOT in excerpt.</div>
+ <div id="fuelLoViz"></div>
+ </section>
+
+ <section class="panel sectionviz" id="blockPartPanel">
+ <h2>blockPart ($B6)</h2>
+ <div class="tiny">blockPart byte convention: 1=first half, 2=value-2 bridge-half marker. Declared in excerpt ZP-VARIABLES. Transition logic NOT in excerpt.</div>
+ <div id="blockPartViz"></div>
+ </section>
+
+ <section class="panel slotaddr" id="slotAddrPanel">
+ <h2>Slot address reverse-lookup</h2>
+ <div class="tiny">ZP addresses for each field of the selected block slot (0..5)</div>
+ <div id="slotAddrViz"></div>
+ </section>
+
+ <section class="panel hexedit" id="hexEditorPanel">
+  <h2>Zero-page hex editor ($80-$FD)</h2>
+  <div style="margin-bottom:6px">
+  <label style="font-size:12px;color:var(--muted)">Filter: <input id="hexFilterInput" type="text" placeholder="field name or $addr" style="background:var(--bg);color:var(--fg);border:1px solid var(--border);padding:2px 6px;font-family:monospace;font-size:12px;width:160px"></label>
+  </div>
+  <div id="hexEditorViz" style="max-height:400px;overflow:auto"></div>
+  </section>
+
+ <section class="panel missilestate" id="missileStatePanel">
+  <h2>Missile bounds inspector</h2>
+  <div class="tiny">Missile Y/X bytes, $FF-sentinel check on missileFlag, and bounds check against excerpt constants MIN_MISSILE=13 MAX_MISSILE=161. Advance/fire/collision logic NOT in excerpt.</div>
+  <div id="missileStateViz"></div>
+ </section>
+
+ <section class="panel playermove" id="playerMovePanel">
+  <h2>P0 position/velocity byte inspector</h2>
+  <div class="tiny">Declared P0-related bytes: playerX, speedX, speedY. JET_Y=19 fixed scanline constant. Physics/acceleration/wrapping are NOT in excerpt.</div>
+  <div id="playerMoveViz"></div>
+ </section>
+
+ <section class="panel pfcolor" id="pfColorPanel">
+  <h2>PFcolor / valleyWidth shared byte ($EE)</h2>
+  <div class="tiny">PFcolor and valleyWidth are two names for the same declared byte in excerpt ZP-VARIABLES. This panel shows the raw byte plus a color decode only.</div>
+  <div id="pfColorViz"></div>
+ </section>
+
+ <section class="panel shaptr" id="shapePtrPanel">
+  <h2>Shape pointer state</h2>
+  <div class="tiny">shapePtr0 ($BA), shapePtr1a ($C7), shapePtr1b ($C9) — 2-byte ROM shape ptrs from ZP-VARIABLES.</div>
+  <div id="shapePtrViz"></div>
+ </section>
+
+ <section class="panel shaptr" id="jetSpritePtrPanel">
+  <h2>shapePtr0 target bytes</h2>
+  <div class="tiny">shapePtr0 ($BA), reflect0 ($E0), playerColor ($EF), playerX ($B3), JET_Y=19. Target bitmap bytes and P0 NUSIZ shadow are NOT visible in the excerpt.</div>
+  <div id="jetSpritePtrViz"></div>
+ </section>
+
+ <section class="panel pfptr" id="pfPtrPanel">
+  <h2>PF pointer state ($D9/$DB)</h2>
+  <div class="tiny">PF1Ptr ($D9), PF2Ptr ($DB) — 2-byte ROM pattern page ptrs from ZP-VARIABLES. Bank-switching NOT in excerpt.</div>
+  <div id="pfPtrViz"></div>
+ </section>
+
+ <section class="panel colptr" id="colorPtrPanel">
+  <h2>Color pointer state ($CB)</h2>
+  <div class="tiny">colorPtr ($CB, length 2) — ROM color lookup table pointer from ZP-VARIABLES.</div>
+  <div id="colorPtrViz"></div>
+ </section>
+
+ <section class="panel savedrng" id="savedRngPanel">
+  <h2>Saved RNG state ($EB/$EC)</h2>
+  <div class="tiny">randomLoSave2 ($EB) / randomHiSave2 ($EC) — level-start RNG pair for consistency. Save/restore logic NOT in excerpt.</div>
+  <div id="savedRngViz"></div>
+ </section>
+
+ <section class="panel collision" id="collisionPanel">
+  <h2>Collision alias bytes ($E8/$E0/$E2/$E4)</h2>
+  <div class="tiny">collidedEnemy ($E8) plus alias bytes reflect0 (scorePtr2+3, $E0), hitEnemyIdx (scorePtr2+5, $E2), and PFCrashFlag (scorePtr2+7, $E4). TIA CX register collision reads NOT in excerpt; this panel does not claim resolved collision behavior.</div>
+  <div id="collisionViz"></div>
+ </section>
+
+ <section class="panel state" id="stateAreaPanel">
+  <h2>Declared state-byte areas ($BD..$C5)</h2>
+  <div class="tiny">Declared player1State/player2State byte ranges from ZP-VARIABLES, including the visible livesPtr2 alias-byte note.</div>
+  <div id="stateAreaViz"></div>
+ </section>
+
+ <section class="panel mainlooptrace" id="mainloopTracePanel">
+  <h2>MainLoop fuel trace</h2>
+  <div class="tiny">Instruction-level trace of MainLoop fuel-bar computation: LDA fuelHi, 3x LSR, CLC, ADC #69, JSR SetPosX. Fully excerpt-grounded from visible ASM.</div>
+  <div id="mainloopTraceViz"></div>
+ </section>
+
+ <section class="panel stcolor" id="stateColorPanel">
+  <h2>State display colors ($F0/$F1)</h2>
+  <div class="tiny">stateBKColor ($F0, const GREY) / statePFColor ($F1, const YELLOW+2). Set by init code NOT in excerpt.</div>
+  <div id="stateColorViz"></div>
+ </section>
+
+ <section class="panel plyrcolor" id="playerColorPanel">
+  <h2>Player color ($EF)</h2>
+  <div class="tiny">playerColor ($EF, YELLOW/BLACK). Toggle logic (invulnerability flash) NOT in excerpt.</div>
+  <div id="playerColorViz"></div>
+ </section>
+
+ <section class="panel kernelline" id="kernelLineNumPanel">
+ <h2>Kernel line counter ($FD)</h2>
+ <div class="tiny">kernelLineNum byte from excerpt ZP-VARIABLES. Counter update logic is not visible in the excerpt.</div>
+ <div id="kernelLineNumViz"></div>
+ </section>
+
+ <section class="panel stcolor" id="saverStatePanel">
+ <h2>Screensaver state ($85/$86/$F7)</h2>
+ <div class="tiny">SS_XOR ($85), SS_Mask ($86), SS_Delay ($F7) — screensaver color-shift fields from ZP-VARIABLES. XOR/Mask/delay logic NOT in excerpt — inspector-only.</div>
+  <div id="saverStateViz"></div>
+  </section>
+
+  <section class="panel kernelline" id="resetSeqPanel">
+  <h2>Reset sequence trace</h2>
+  <div class="tiny">Step-by-step annotation of the visible Reset code ($F000). JSR subroutines (SetScorePtrs, SetScorePtr1, GameInit) are NOT in the excerpt — inspector-only trace aid.</div>
+  <div id="resetSeqViz"></div>
+  </section>
+
+ <section class="panel kernelline" id="blockLinePanel">
+ <h2>Block line / kernel phase ($FC)</h2>
+ <div class="tiny">temp3/blockLine/maxId triple alias at $FC. Kernel structure 12*2+8=32 from ASM comment. Phase labels are excerpt-constant-derived; kernel code NOT in excerpt.</div>
+ <div id="blockLineViz"></div>
+ </section>
+
+ <section class="panel kernelline" id="zeroConstsPanel">
+ <h2>Zero-const invariants ($F3/$F6)</h2>
+ <div class="tiny">zero1 ($F3) and zero2 ($F6) are declared "always zero!" in the ASM excerpt. Non-zero values indicate an inspector edit or write outside excerpt-grounded logic.</div>
+ <div id="zeroConstsViz"></div>
+ </section>
+
+ <section class="panel kernelline" id="pf1PatIdPanel">
+ <h2>PF1PatId ($BC)</h2>
+ <div class="tiny">Playfield pattern ID for new generated block. Page boundary at SWITCH_PAGE_ID=9: ids < 9 = $FC, >= 9 = $FD. Generation code NOT in excerpt.</div>
+ <div id="pf1PatIdViz"></div>
+ </section>
+
+ <section class="panel kernelline" id="player1StatePanel">
+ <h2>player1State byte area ($BD..$C1)</h2>
+ <div class="tiny">Declared player1State byte area with level alias byte, saved RNG pair, and livesPtr bytes. All sub-fields from excerpt ZP-VARIABLES. Read/write code NOT in excerpt.</div>
+ <div id="player1StateViz"></div>
+ </section>
+
+<section class="panel fuelbar" id="fuelDisplayPanel">
+ <h2>Fuel Display State ($B7/$B8)</h2>
+ <div class="tiny">Unified fuel view: fuelHi ($B7), fuelLo ($B8), fuel16, ball position from MainLoop LDA/LSR/LSR/LSR/CLC/ADC#69. Drain/fill NOT in excerpt.</div>
+ <div id="fuelDisplayViz"></div>
+</section>
+
+<section class="panel stcolor" id="player2StatePanel">
+ <h2>Player2 state ($C2..$C5)</h2>
+ <div class="tiny">player2State 4 bytes with livesPtr2=$C5 (low byte only, high is const). Read/write code NOT in excerpt -- inspector-only.</div>
+ <div id="player2StateViz"></div>
+</section>
+
+<section class="panel kernelline" id="pf1PatIdPagePanel">
+ <h2>PF1PatId Page Boundary ($BC)</h2>
+ <div class="tiny">PF1 pattern ID page resolver. SWITCH_PAGE_ID=9: IDs >= 9 use ROM page $FD, others $FC. Zone labels are inspector-only aids. Generation code NOT in excerpt.</div>
+ <div id="pf1PatIdPageViz"></div>
+</section>
+
+<section class="panel kernelline" id="blockOffsetLinePanel">
+ <h2>Block offset line ($B6 + $B9)</h2>
+ <div class="tiny">Computes section-relative line from blockOffset ($B6) and sectionBlock ($B9). (SECTION_BLOCKS - sectionBlock) * BLOCK_SIZE + blockOffset. Inspector-only; kernel scan order NOT in excerpt.</div>
+ <div id="blockOffsetLineViz"></div>
+</section>
+
+<section class="panel kernelline" id="rngSeedPanel">
+ <h2>RNG seed period</h2>
+ <div class="tiny">LFSR period analysis for a given 16-bit seed. Seed $0000 = lock-up. Maximal period = 65,535. Section count (57,337) from ASM header. Cycle restriction logic NOT in excerpt.</div>
+ <div id="rngSeedViz"></div>
+</section>
+
+<section class="panel kernelline" id="kernelTimingPanel">
+ <h2>Kernel timing ($FC)</h2>
+ <div class="tiny">Decodes blockLine/temp3 ($FC) into display phase (12x2-line = 24 scanlines) vs setup (8 lines). Structure from ASM header comment. Kernel code NOT in excerpt.</div>
+ <div id="kernelTimingViz"></div>
+</section>
+
+<section class="panel kernelline" id="pf1PageAddressPanel">
+ <h2>PF1 page address ($BC)</h2>
+ <div class="tiny">computePF1PageAddress: ROM page high byte from PF1PatId. &lt; SWITCH_PAGE_ID(9) = $FC, &gt;= 9 = $FD. Banking mechanism NOT in excerpt.</div>
+ <div id="pf1PageAddressViz"></div>
+</section>
+
+<section class="panel kernelline" id="sectionBlockSeqPanel">
+ <h2>Section block sequence ($B9)</h2>
+ <div class="tiny">Enumerates raw sectionBlock countdown bytes: 0=transition sentinel, 1=bridge sentinel, 2..16=numbered block values. Derived from SECTION_BLOCKS=16 constant. Transition logic NOT in excerpt.</div>
+ <div id="sectionBlockSeqViz"></div>
+</section>
+
+<section class="panel kernelline" id="diffPFVizPanel">
+ <h2>diffPF inspector ($F2)</h2>
+ <div class="tiny">The ASM excerpt declares "diffPF = temp ; difference between two PF pattern ids". The PF-difference computation itself is NOT in excerpt — this surfaces the raw byte only.</div>
+ <div id="diffPFViz"></div>
+</section>
+
+<section class="panel kernelline" id="arrayEndsPanel">
+ <h2>Block array end addresses</h2>
+ <div class="tiny">End-address constants from ASM excerpt: blockLstEnd ($93), XPos1LstEnd ($99), State1LstEnd ($9F), Shape1IdLstEnd ($A5), PF1LstEnd ($AB), PF2LstEnd ($B1). Derived as base+NUM_BLOCKS-1 for each of the six block arrays. Used by kernel to iterate blocks.</div>
+ <div id="arrayEndsViz"></div>
+</section>
+
+<section class="panel nusizdetail" id="nusizDetailPanel">
+ <h2>NUSIZ per slot ($9A..$9F)</h2>
+ <div class="tiny">TIA NUSIZx values decoded from State1Lst bit 0-2. ASM names: TWO_COPIES=%001, THREE_COPIES=%011, DOUBLE_SIZE=%101, QUAD_SIZE=%111 (ASM lines 158-162). Bit 3 = REFP1 direction. Fine-move bits 4-7 = HMxy. Full kernel NUSIZ write timing NOT in excerpt.</div>
+ <div id="nusizDetailViz"></div>
+</section>
+
+<section class="panel sectionprogress" id="sectionProgressPanel">
+ <h2>Section progress ($B9/$B6/$8B)</h2>
+ <div class="tiny">Section/block/offset progress inspector. sectionBlock ($B9, ASM line 217) counts down from SECTION_BLOCKS=16. blockOffset ($8B) advances per frame within BLOCK_SIZE=32. blockPart ($B6) toggles 1/2 for bridge halves. Section/block advance logic NOT in excerpt.</div>
+ <div id="sectionProgressViz"></div>
+</section>
+
+</div>
+ </div>
+ <script type="module" src="./viewer.mjs?v=91"></script>
+</body>
+</html>

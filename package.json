@@ -1,0 +1,10 @@
+{
+  "name": "riverraid-visible-port",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python -m http.server 8080 --bind 127.0.0.1",
+    "check": "node --check game.mjs && node --check riverraidVisiblePort.mjs && node --check viewer.mjs && node --check playerJetSprite.mjs && node --check riverraid_verified_sprite_meta.mjs && node --check riverraid_port.js && node smoke-check.mjs"
+  }
+}

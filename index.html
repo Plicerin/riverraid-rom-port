@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>River Raid Port</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06111d;
+      --panel: #0d1b2a;
+      --panel2: #13253a;
+      --fg: #e8f0ff;
+      --muted: #8fa6c1;
+      --accent: #5cc8ff;
+      --accent2: #ffd166;
+      --danger: #ff6b6b;
+      --border: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #10253b, var(--bg) 55%);
+      color: var(--fg);
+      font: 14px/1.4 system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+    .shell {
+      width: min(1100px, 100%);
+      display: grid;
+      grid-template-columns: minmax(360px, 700px) minmax(260px, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+    .game-wrap {
+      padding: 16px;
+    }
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .stat .label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .stat .value {
+      font: 700 22px/1.1 ui-monospace, monospace;
+      margin-top: 6px;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      image-rendering: pixelated;
+      background: #0b1724;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    button, a.button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #16304a, #0d2236);
+      color: var(--fg);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+    }
+    button:hover, a.button:hover { border-color: rgba(92,200,255,0.55); }
+    .side {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .card {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    .mono { font-family: ui-monospace, monospace; }
+    .muted { color: var(--muted); }
+    #debug { font-size: 12px; color: var(--muted); }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel game-wrap">
+      <div class="hud">
+        <div class="stat"><div class="label">Score</div><div class="value" id="score">000000</div></div>
+        <div class="stat"><div class="label">Fuel</div><div class="value" id="fuel">100%</div></div>
+        <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
+        <div class="stat"><div class="label">Section</div><div class="value" id="section">1</div></div>
+        <div class="stat"><div class="label">State</div><div class="value" id="status">running</div></div>
+      </div>
+      <canvas id="gameCanvas" width="480" height="576" aria-label="River Raid port game canvas"></canvas>
+      <div class="controls">
+        <button id="pauseButton" type="button">Pause</button>
+        <button id="resetButton" type="button">Reset</button>
+        <a class="button" href="./inspector.html">Open Inspector</a>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <div>
+        <h1>River Raid Port</h1>
+        <p class="muted">Default page is now the playable harness view. The inspector is still preserved separately.</p>
+      </div>
+
+      <div class="card">
+        <h2>Controls</h2>
+        <ul>
+          <li>Move: Arrow keys or WASD</li>
+          <li>Fire: Space or Z</li>
+          <li>Pause: P or the pause button</li>
+          <li>Reset: R or the reset button</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Scope</h2>
+        <p>This page strips away the inspector panels and runs the visible gameplay harness directly: title/game-over flow, scrolling river, on-canvas HUD, player motion, shots, fuel, collisions, bridges, spawning, patrol behavior, and rolling scene replacement.</p>
+      </div>
+
+      <div class="card">
+        <h2>Debug</h2>
+        <div id="debug" class="mono">booting…</div>
+      </div>
+
+      <div class="card">
+        <h2>Inspector route</h2>
+        <p class="mono">/inspector.html</p>
+      </div>
+    </aside>
+  </div>
+
+    <script type="module" src="./game.mjs?v=15"></script>
+</body>
+</html>

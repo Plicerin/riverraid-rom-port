@@ -1,0 +1,94 @@
+<!doctype html><html><head><meta charset="utf-8"><title>River Raid enemy air compare</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:16px}pre{background:#151515;padding:8px;white-space:pre-wrap}.card{border:1px solid #444;background:#1a1a1a;padding:10px;margin:12px 0}</style></head><body><h1>River Raid enemy air sprite comparison</h1><div class="card"><h2>Plane</h2><h3>PlaneA — CPU $F388 ROM 0x0388</h3><pre>········
+········
+········
+········
+········
+··██····
+·█··████
+██···██·
+········</pre><h3>PlaneB — CPU $F3A9 ROM 0x03A9</h3><pre>········
+········
+········
+········
+········
+··███···
+████████
+█·······</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+········
+··AA····
+·ABB█AAA
+██BBB██B
+B·······</pre></div><div class="card"><h2>Heli0</h2><h3>Heli0A — CPU $F399 ROM 0x0399</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+·····███</pre><h3>Heli0B — CPU $F3BA ROM 0x03BA</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+···███··</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···BB█AA</pre></div><div class="card"><h2>Heli1</h2><h3>Heli1A — CPU $F3B1 ROM 0x03B1</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+···███··</pre><h3>Heli1B — CPU $F391 ROM 0x0391</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+·····███</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···AA█BB</pre></div></body></html>

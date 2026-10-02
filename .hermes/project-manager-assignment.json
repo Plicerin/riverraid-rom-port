@@ -1,0 +1,22 @@
+{
+  "agent_id": "pm-riverraid",
+  "agent_name": "Project Manager — River Raid",
+  "profile": "pm-riverraid",
+  "project": "River Raid",
+  "workspace_root": "/mnt/c/Users/vrock/Documents/riverraid-rom-extract",
+  "windows_workspace_root": "C:\\Users\\vrock\\Documents\\riverraid-rom-extract",
+  "role": "Project management / Atari fidelity, milestone, risk, and specialist coordination",
+  "scope": "Exactly one active project: River Raid. Coordinate work; do not perform production implementation or approve releases.",
+  "status": "active_refreshed",
+  "assigned_at": "2026-08-02T00:00:00-04:00",
+  "latest_status_path": "/mnt/c/Users/vrock/Documents/riverraid-rom-extract/.hermes/project-manager-status.md",
+  "phase": "ROM-visible browser harness",
+  "milestone": "Replace harness approximations with ASM-backed gameplay and harden the playable view",
+  "health": {"score": 58, "category": "Attention"},
+  "next_cycle_trigger": "Refresh after check results, a commit, emulator comparison, or a material fidelity decision.",
+  "current_features_count": 7,
+  "delta_summary": "Harness and inspector are solid; visible HUD/audio polish and gameplay-routine replacement remain.",
+  "completion_estimate_percent": 58,
+  "completion_estimate_summary": "ROM-visible harness is active and inspectable; ASM-backed gameplay and playable polish remain.",
+  "target_completion_date": null
+}

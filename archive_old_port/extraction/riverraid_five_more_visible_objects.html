@@ -1,0 +1,92 @@
+<!doctype html><html><head><meta charset='utf-8'><title>River Raid five more visible objects</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:16px}pre{background:#151515;padding:8px;white-space:pre-wrap}.card{border:1px solid #444;background:#1a1a1a;padding:10px;margin:12px 0}</style></head><body><h1>River Raid — five more visible screenshot objects</h1><p>Supplemental extraction for five additional visible objects beyond the already-matched player jet, enemy plane, and helicopter.</p><div class='card'><h2>Ship</h2><p>ShipA — CPU $F3A2 ROM 0x03A2</p><pre>········
+········
+········
+·█████··
+███████·
+·████···
+···█····</pre><p>ShipB — CPU $F381 ROM 0x0381</p><pre>········
+········
+········
+██████··
+████████
+··██····
+···█····</pre><h3>Combined OR silhouette</h3><pre>········
+········
+········
+██████··
+████████
+·████···
+···█····</pre><p>A bytes: 00 00 00 7C FE 78 10</p><p>B bytes: 00 00 00 FC FF 30 10</p></div><div class='card'><h2>Bridge</h2><p>BridgeA — CPU $F375 ROM 0x0375</p><pre>·█····█·</pre><p>BridgeB — CPU $F376 ROM 0x0376</p><pre>████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+·█····█·</pre><h3>Combined OR silhouette</h3><pre>████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+·█····█·</pre><p>A bytes: 42</p><p>B bytes: FF FF FF FF FF FF FF FF FF FF 42</p></div><div class='card'><h2>FuelTank</h2><p>FuelA — CPU $F35E ROM 0x035E</p><pre>███████·
+██·████·
+██·████·
+███████·
+██·████·
+██·████·
+███████·
+██·█·██·
+██·█·██·
+██·████·
+██··███·</pre><p>FuelB — CPU $F369 ROM 0x0369</p><pre>██···██·
+██·████·
+██·████·
+██···██·
+██··███·
+██···██·
+██···██·
+██·█·██·
+███████·
+██·████·
+██·████·
+·█████··</pre><h3>Combined OR silhouette</h3><pre>███████·
+██·████·
+██·████·
+███████·
+██·████·
+██·████·
+███████·
+██·█·██·
+███████·
+██·████·
+██·████·
+·█████··</pre><p>A bytes: FE DE DE FE DE DE FE D6 D6 DE CE</p><p>B bytes: C6 DE DE C6 CE C6 C6 D6 FE DE DE 7C</p></div><div class='card'><h2>Score HUD (904720)</h2><pre>··████·····████·······██······██·····██████····████··
+·█···██···██··██······██······██·····██·······██··██·
+·····██···██··██······██······██·····██·······██··██·
+··█████···██··██···██████·····██······████····██··██·
+·██··██···██··██···█··██·······██········██···██··██·
+·██··██···██··██····█·██········██·······██···██··██·
+·██··██···██··██·····███····█····█···█···██···██··██·
+··████·····████·······██····██████····████·····████··</pre><p>Digits used: Nine, Zero, Four, Seven, Two, Zero</p></div><div class='card'><h2>Fuel HUD kernel tables</h2><pre>·███████ ████████ ······· ████████ ████████ ████████
+·█······ ········ ······· ········ ········ ·······█
+·█··████ ········ ······· ······██ █······· █······█
+·█··█··· ········ ······· ██····█· ········ █······█
+·█··█··· ········ ······· ·██···██ █······· █······█
+·█··███· ········ ······· ··██···· █······· ███····█
+·█··█··· ········ ······· ···██·██ █······· █······█
+·█··█··· ········ ······· ███·██·· ········ █······█
+·█··████ ········ ······· ·█···██· ········ ████···█
+·█······ ········ ······· ·█····██ ········ ·······█
+·█······ ········ ······· ██·····█ █······· ·······█
+·█··██·· ········ ······· ·█··█··· ········ ···██··█
+·█··██·· ········ ······· ····█··· ········ ···██··█
+·█··██·· ········ ······· ····█··· ········ ···██··█
+·███████ ········ ······· ········ ········ ████████</pre><p>Conservative schematic: FuelTab0..4 shown as 8-bit cells, with ENABLTab shown as a centered marker column. This is table-faithful, not a pixel-perfect x-position reconstruction of the HUD kernel.</p><p>FuelTab0..4/ENABLTab addresses: FuelTab0=$F300 (0x0300), FuelTab1=$F30F (0x030F), FuelTab2=$F31D (0x031D), FuelTab3=$F32B (0x032B), FuelTab4=$F339 (0x0339), ENABLTab=$F348 (0x0348)</p></div></body></html>

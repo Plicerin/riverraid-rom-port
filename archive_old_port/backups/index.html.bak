@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>River Raid</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  width: 640px;
+  height: 480px;
+}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// River Raid — Vanilla JS port using extracted ROM sprites
+// ═══════════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// Internal resolution (VCS 320x240), scaled 2x
+const W = 320, H = 240, SCALE = 2;
+canvas.width = W * SCALE;
+canvas.height = H * SCALE;
+ctx.imageSmoothingEnabled = false;
+
+// Offscreen buffer for internal resolution
+const buf = document.createElement('canvas');
+buf.width = W; buf.height = H;
+const g = buf.getContext('2d');
+
+// ── Colors (NTSC VCS register values from config.py) ────────────────
+// Water is BLUE, not green — matching original Atari screenshot
+const C = {
+  // VCS register values (NTSC):
+  // $00=BLACK  $06=GREY   $0C=LIGHT_GREY
+  // $10=BROWN  $1C=YELLOW $2A=ORANGE
+  // $48=RED    $80=DARK_BLUE $84=BLUE
+  // $B0=CYAN   $D2=GREEN  $DA=LIGHT_GREEN
+  BLACK:       [0,0,0],              // $00
+  WHITE:       [255,255,255],
+  GREY:        [48,48,48],           // $06 – road/ground
+  LIGHT_GREY:  [96,96,96],           // $0C – fuel depot, house detail
+  BROWN:       [81,71,31],           // $10 – house body
+  YELLOW:      [253,244,152],        // $1C – player jet, HUD, road stripe
+  ORANGE:      [253,168,76],         // $2A – explosion, heli accent
+  RED:         [250,56,24],          // $48 – bridge, fuel text
+  DARK_BLUE:   [100,85,64],          // $80 – heli body
+  BLUE:        [138,0,28],           // $84 – water background
+  CYAN:        [96,240,240],         // $B0 – heli accent
+  GREEN:       [0,180,0],            // $D2 – water color
+  LIGHT_GREEN: [0,224,0],            // $DA – river bank green
+  // Derived/gradient colors (not directly in ASM, used for sprite gradients)
+  PLANE_GREEN: [86,96,68],           // $AC – plane color 1
+  PLANE_GREY:  [78,78,78],           // $9C – plane color 2
+  PLANE_DARK:  [68,68,68],           // $8C – plane color 3
+  SHIP_WHITE:  [84,84,84],           // $A8 – ship color 1
+  SHIP_LIGHT:  [24,24,24],           // $32 – ship color 2 (light grey)
+  BRIDGE_RED:  [144,16,8],           // $20 – bridge color 1
+  BRIDGE_DARK: [72,24,12],           // $14 – bridge color 2
+  BRIDGE_DARKEST:[64,16,8],          // $12 – bridge color 3
+};
+function rgb(c) { return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+
+// ── Constants ───────────────────────────────────────────────────────
+const ROAD_H   = 13;
+const JET_Y    = 19;
+const INTRO_FRAMES = 48;
+const FUEL_MAX = 255;
+const FUEL_DRAIN = 1;
+const FUEL_REFUEL = 2;
+const MAX_SPEED_X = 3;
+const MAX_SPEED_Y = 2;
+const MISSILE_SPD = 4;
+const LIVES_START = 3;
+const MULT_START = 10;
+const BLOCK_FRAMES = 32;
+const SECTION_BLOCKS = 16;
+
+// JTZ SHAPE_POS_TAB × 2 for enemy spawn x
+const SPAWN_X = [
+  null, 286, 14, 20, 264, 26, 256, 36, 248, 44, 240
+];
+
+// Score values per enemy type (JTZ ScoreTab)
+const SCORE_VAL = {
+  4: 100,  // Plane
+  5: 60,   // Helicopter (type 1)
+  6: 60,   // Helicopter (type 2)
+  7: 30,   // Ship
+  8: 500,  // Bridge
+  9: 0,    // House
+  10: 80,  // Fuel depot
+};
+
+// ── Playfield Patterns (PFPat0–14) — from JTZ disassembly ──────────
+// Each pattern is 8-bit row bytes. Bit 7 = leftmost pixel, bit 0 = rightmost.
+// Leading 1-bits from MSB determine bank width per 8-pixel segment.
+const PFPAT = [
+  // PFPat0: Empty river (19 rows $00 + transition)
+  [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x03,0x07,0x0F,0x1F],
+  // PFPat1: Single-pixel bank edge
+  [0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0xFF,0x80,0x7F,0x40,0x4F,0x48,0x48,0x4E],
+  // PFPat2: Two-pixel bank edge
+  [0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0],
+  // PFPat3: Three-pixel bank edge
+  [0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xC0,0x80],
+  // PFPat4: Four-pixel bank edge
+  [0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xE0,0xC0,0x80,0xC0],
+  // PFPat5: Five-pixel bank edge
+  [0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0],
+  // PFPat6: Six-pixel bank edge
+  [0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0],
+  // PFPat7: Seven-pixel bank edge
+  [0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0,0xF8],
+  // PFPat8: Full bank / eight-pixel
+  [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFE,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0,0xF8,0xFC],
+  // PFPat9: Island left edge — 1 column
+  [0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x2A,0x3E,0x1C,0x08],
+  // PFPat10: Island left edge — 2 columns
+  [0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+  // PFPat11: Island left edge — 3 columns
+  [0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01],
+  // PFPat12: Island left edge — 4 columns
+  [0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01],
+  // PFPat13: Island left edge — 5 columns
+  [0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+  // PFPat14: Island left edge — 6 columns
+  [0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x1F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+];
+
+// ── BankPtrTab — maps PF1PatId to actual pattern indices ────────────
+const BANK_PTR_TAB = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+
+// ── PRNG ────────────────────────────────────────────────────────────
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+let rng = mulberry32(42);
+
+// ═══════════════════════════════════════════════════════════════════
+// SPRITE DATA — extracted directly from ROM bytes
+// Each byte = one row, bit 0 = leftmost pixel, bit 7 = rightmost
+// ═══════════════════════════════════════════════════════════════════
+
+/** Convert bytes array to pixel grid (0/1 arrays per row) */
+function bytesToPixels(bytes) {
+  return bytes.map(b => {
+    const row = [];
+    for (let i = 0; i < 8; i++) {
+      row.push((b >> i) & 1);
+    }
+    return row;
+  });
+}
+
+// Player jet sprites (18 rows × 8 cols, 17 rows for explode)
+const JetStraight = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  5,3,6,0,5,0,5,0,  // row 5: bits 0,2,3,5,6
+  3,7,14,0,12,0,0,0, // row 6: bits 0-4,6
+  0,0,6,14,0,0,0,0,  // row 7
+  0,0,0,0,8,0,0,0,   // row 8
+  2,0,0,0,5,0,0,1,   // row 9
+  2,6,13,0,5,0,2,0,  // row 10
+  2,7,14,14,14,14,14,14, // row 11
+  2,7,14,14,14,14,14,14, // row 12
+  2,3,7,14,14,14,14,0, // row 13
+  0,0,3,14,6,0,0,0,   // row 14
+  0,0,0,0,8,0,0,0,   // row 15
+  0,0,0,0,8,0,0,0,   // row 16
+  0,0,0,0,8,0,0,0,   // row 17
+]);
+
+const JetMove = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,1,
+  3,5,6,14,14,14,0,0,
+  3,7,14,14,14,6,0,0,
+  0,0,6,12,0,0,0,0,
+  0,0,0,0,8,0,0,0,
+  0,0,0,0,8,0,2,0,
+  1,0,5,14,14,14,14,0,
+  1,3,7,14,14,14,14,0,
+  1,3,7,14,14,14,14,0,
+  1,3,7,14,14,6,0,0,
+  0,0,3,12,0,0,0,0,
+  0,0,0,0,8,0,0,0,
+  0,0,0,0,8,0,0,0,
+  0,0,0,0,8,0,0,0,
+]);
+
+const JetExplode = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,1,
+  0,0,0,0,0,4,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,4,0,0,0,0,0,0,
+  0,0,0,0,8,0,0,0,
+  0,2,0,0,0,0,0,1,
+  4,0,0,0,0,4,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,0,0,0,0,2,0,
+  0,0,0,0,4,0,0,0,
+  0,0,0,0,0,0,0,0,
+]);
+
+// Enemy sprites
+const PlaneA = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,3,12,0,0,0,0,
+  6,10,0,0,6,14,14,14,
+  12,12,0,0,0,6,14,0,
+  0,0,0,0,0,0,0,0,
+]);
+
+const PlaneB = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,6,14,14,0,0,
+  14,14,14,14,14,14,14,14,
+  12,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+]);
+
+const Heli0A = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,2,0,
+  14,14,14,14,14,14,14,14,
+  12,0,0,4,6,14,14,14,
+  0,0,0,0,0,0,2,0,
+  0,0,0,0,0,3,14,14,
+]);
+
+const Heli0B = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,3,14,14,14,0,
+  4,0,0,0,6,14,14,14,
+  14,14,14,14,14,14,14,14,
+  0,0,0,0,6,14,14,14,
+  0,0,0,3,14,14,0,0,
+]);
+
+const Heli1A = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,2,0,
+  14,14,14,14,14,14,14,14,
+  12,0,0,4,6,14,14,14,
+  0,0,0,0,0,0,2,0,
+  0,0,0,0,0,3,14,0,
+]);
+
+const Heli1B = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,3,14,14,14,
+  4,0,0,0,6,14,14,14,
+  14,14,14,14,14,14,14,14,
+  0,0,0,0,6,14,14,14,
+  0,0,0,0,3,14,0,0,
+]);
+
+const ShipA = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,6,14,14,14,14,0,0,
+  14,14,14,14,14,14,14,0,
+  0,6,14,14,14,0,0,0,
+  0,0,0,8,0,0,0,0,
+]);
+
+const ShipB = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  14,14,14,14,14,14,0,0,
+  14,14,14,14,14,14,14,14,
+  0,0,6,14,0,0,0,0,
+  0,0,0,8,0,0,0,0,
+]);
+
+const BridgeA = bytesToPixels([0]); // 1 row
+const BridgeB = bytesToPixels([
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  14,14,14,14,14,14,14,14,
+  2,4,0,0,0,0,4,2,
+]);
+
+const HouseA = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,6,14,14,0,
+  0,0,0,6,14,14,14,14,
+  0,0,0,0,6,14,14,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,0,0,0,0,
+  14,14,14,14,14,14,14,0,
+  12,0,4,0,4,0,12,0,
+  14,14,14,14,14,14,14,0,
+  0,0,6,14,14,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+]);
+
+const HouseB = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,6,14,14,14,14,
+  0,0,0,0,6,14,14,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,0,0,0,0,
+  4,0,4,0,4,0,4,0,
+  14,14,14,14,14,14,14,0,
+  0,6,14,14,14,14,0,0,
+  0,0,0,0,0,0,0,0,
+]);
+
+const FuelA = bytesToPixels([
+  254,222,222,254,222,222,254,214,214,222,214,
+]);
+
+const FuelB = bytesToPixels([
+  6,6,0,0,0,6,6,0,
+  6,6,0,6,6,6,6,0,
+  6,6,0,6,6,6,6,0,
+  6,6,0,0,0,6,6,0,
+  6,6,0,0,6,6,6,0,
+  6,6,0,0,0,6,6,0,
+  6,6,0,0,0,6,6,0,
+  6,6,0,4,0,6,6,0,
+  6,6,6,6,6,6,6,0,
+  6,6,0,6,6,6,6,0,
+  6,6,0,6,6,6,6,0,
+  0,6,6,6,6,6,0,0,
+]);
+
+// Explosion sprites
+const Explosion0 = bytesToPixels(new Array(13).fill(0));
+const Explosion1A = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,0,8,0,0,
+  0,0,0,0,16,0,0,0,
+  0,0,0,0,0,0,4,0,
+  0,0,0,0,0,0,0,0,
+]);
+const Explosion1B = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,4,0,0,0,0,0,
+  0,2,0,0,0,0,0,0,
+  0,0,0,8,0,0,0,0,
+]);
+const Explosion2A = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,4,0,
+  4,0,0,0,6,0,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,0,0,0,0,4,0,
+  4,0,0,0,0,0,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+]);
+const Explosion2B = bytesToPixels([
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,
+  0,0,0,8,0,0,0,0,
+  0,0,0,0,0,4,0,0,
+  0,4,0,0,0,0,0,4,
+  0,0,8,0,0,0,0,0,
+  0,0,0,0,0,4,0,0,
+  0,0,0,0,0,0,4,0,
+]);
+
+// ── Game State ──────────────────────────────────────────────────────
+let state = 'TITLE';
+let introFrames = INTRO_FRAMES;
+
+// ── Player ──────────────────────────────────────────────────────────
+let P = {};
+function resetPlayer() {
+  P = {
+    x: W / 2, y: JET_Y,
+    vx: 0, vy: 0,
+    alive: true, explodeFrames: 0,
+    fuel: FUEL_MAX, lives: LIVES_START,
+  };
+}
+
+// ── Entities ────────────────────────────────────────────────────────
+let bullets = [];
+let enemies = [];
+let fuel  = [];
+let explosions = [];
+
+// ── River ───────────────────────────────────────────────────────────
+let river = {
+  center: W / 2, width: 100,
+  tgtCenter: W / 2, tgtWidth: 100,
+  blockCnt: 0, island: false,
+  sectionsLeft: SECTION_BLOCKS,
+  pf1PatId: 0,
+};
+function resetRiver() {
+  river.center = W / 2; river.width = 100;
+  river.tgtCenter = W / 2; river.tgtWidth = 100;
+  river.blockCnt = 0; river.island = false;
+  river.sectionsLeft = SECTION_BLOCKS;
+  river.pf1PatId = 0;
+}
+
+// ── Spawner ─────────────────────────────────────────────────────────
+let spawner = { blockCnt: 0, sectionCnt: 0 };
+function resetSpawner() {
+  spawner.blockCnt = 0; spawner.sectionCnt = 0;
+}
+
+// ── Scoring ─────────────────────────────────────────────────────────
+let score = 0, multiplier = MULT_START, multDecay = 0;
+
+// ── Input ───────────────────────────────────────────────────────────
+const keys = {};
+const just = {};
+document.addEventListener('keydown', e => {
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))
+    e.preventDefault();
+  if (!keys[e.code]) just[e.code] = true;
+  keys[e.code] = true;
+});
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// ── Helpers ─────────────────────────────────────────────────────────
+function rect(x, y, w, h, c) {
+  g.fillStyle = rgb(c); g.fillRect(x, y, w, h);
+}
+
+/** Draw a sprite from pixel grid at (sx, sy), optionally flipped horizontally */
+function drawSprite(sprite, sx, sy, flipX, color) {
+  g.fillStyle = rgb(color);
+  for (let row = 0; row < sprite.length; row++) {
+    const rowData = sprite[row];
+    for (let col = 0; col < rowData.length; col++) {
+      if (rowData[col]) {
+        const px = flipX ? sx + (7 - col) : sx + col;
+        g.fillRect(px, sy + row, 1, 1);
+      }
+    }
+  }
+}
+
+// ── Player Jet (using ROM sprites) ──────────────────────────────────
+ function drawJet(x, y, moving) {
+    const jet = moving ? JetMove : JetStraight;
+    // Player color is BLACK during normal gameplay (JTZ: playerColor = 0)
+    drawSprite(jet, x, y, false, C.BLACK);
+  }
+
+function drawJetExplode(x, y) {
+  drawSprite(JetExplode, x, y, false, C.ORANGE);
+}
+
+// ── Enemy Shapes (using ROM sprites) ────────────────────────────────
+function drawEnemy(e) {
+  // ColorPtrTab / COLUP1 colors — cycle through gradients
+  const colMap = {
+    4: [C.PLANE_GREEN, C.PLANE_GREY, C.PLANE_DARK],   // Plane: $AC, $9C, $8C
+    5: [C.CYAN, C.DARK_BLUE, C.ORANGE],                // Heli: $B0, $80, $2A
+    6: [C.CYAN, C.DARK_BLUE, C.ORANGE],                // Heli1: $B0, $80, $2A
+    7: [C.SHIP_WHITE, C.SHIP_LIGHT, C.BLACK],           // Ship: $A8, $32, BLACK
+    8: [C.BRIDGE_RED, C.BRIDGE_DARK, C.BRIDGE_DARKEST], // Bridge: $20, $14, $12
+    9: [C.BROWN, C.LIGHT_GREEN, C.BLACK, C.LIGHT_GREY], // House: $10, $DA, BLACK, $0C
+  };
+  const colors = colMap[e.type] || [C.GREY];
+  const c = colors[e.frame % colors.length];
+  const x = e.x, y = e.y;
+
+  if (e.type === 4) { // Plane
+    const sp = e.dir > 0 ? PlaneA : PlaneB;
+    drawSprite(sp, x, y, false, c);
+  } else if (e.type === 5) { // Heli0
+    const sp = e.dir > 0 ? Heli0A : Heli0B;
+    drawSprite(sp, x, y, false, c);
+  } else if (e.type === 6) { // Heli1
+    const sp = e.dir > 0 ? Heli1A : Heli1B;
+    drawSprite(sp, x, y, false, c);
+  } else if (e.type === 7) { // Ship
+    const sp = e.dir > 0 ? ShipA : ShipB;
+    drawSprite(sp, x, y, false, c);
+  } else if (e.type === 8) { // Bridge — spans wider
+    // BridgeB is the main body, draw it wider
+    for (let r = 0; r < BridgeB.length; r++) {
+      for (let c2 = 0; c2 < BridgeB[r].length; c2++) {
+        if (BridgeB[r][c2]) {
+          g.fillStyle = rgb(c);
+          g.fillRect(x + c2 - 1, y + r, 1, 1);
+        }
+      }
+    }
+    // Draw the bridge cap (BridgeA) at top
+    g.fillStyle = rgb([0,0,0]); // black cap
+    g.fillRect(x - 1, y - 1, 10, 1);
+    g.fillStyle = rgb([160,100,60]); // brown
+    g.fillRect(x - 1, y, 10, 1);
+  } else if (e.type === 9) { // House
+    const sp = e.dir > 0 ? HouseA : HouseB;
+    drawSprite(sp, x, y, false, c);
+  }
+}
+
+// ── Reset / Init ────────────────────────────────────────────────────
+function resetGame() {
+  resetPlayer();
+  bullets = []; enemies = []; fuel = []; explosions = [];
+  score = 0; multiplier = MULT_START; multDecay = 0;
+  resetRiver(); resetSpawner();
+}
+
+function fullReset() {
+  resetGame();
+}
+
+// ── Spawn Logic ─────────────────────────────────────────────────────
+function spawnBlock() {
+  spawner.sectionCnt++;
+  const roll = Math.floor(rng() * 100);
+  const diff = Math.min(spawner.sectionCnt / 10, 5);
+
+  if (roll < 10 + diff) {
+    const x = SPAWN_X[4] || 80;
+    enemies.push({ type:4, x:x, y:0, alive:true, dir:1, frame:0 });
+  } else if (roll < 30 + diff*2) {
+    const x = SPAWN_X[5] || 90;
+    enemies.push({ type: rng()<0.5?5:6, x:x, y:0, alive:true, dir:1, frame:0 });
+  } else if (roll < 60) {
+    const x = SPAWN_X[7] || 100;
+    enemies.push({ type:7, x:x, y:0, alive:true, dir:1, frame:0 });
+  } else if (roll < 65) {
+    const x = SPAWN_X[8] || 110;
+    enemies.push({ type:8, x:x, y:0, alive:true, dir:0, frame:0 });
+  } else if (roll < 80) {
+    const x = SPAWN_X[9] || 120;
+    enemies.push({ type:9, x:x, y:0, alive:true, dir:1, frame:0 });
+  }
+
+  // Fuel depots every 4 sections
+  if (spawner.sectionCnt % 4 === 0) {
+    const x = SPAWN_X[10] || 120;
+    fuel.push({ x:x, y:0, alive:true });
+  }
+}
+
+function addExplosion(x, y, type) {
+  explosions.push({ x, y, type, timer: 6 });
+}
+
+// ── Update ──────────────────────────────────────────────────────────
+function update() {
+  const curJust = {...just};
+
+  // ── TITLE ─────────────────────────────────────────────────────
+  if (state === 'TITLE') {
+    if (just['Space']) {
+      state = 'SCROLL_IN';
+      introFrames = INTRO_FRAMES;
+      fullReset();
+    }
+    just['Space'] = false;
+    draw();
+    return;
+  }
+
+  // ── SCROLL_IN ─────────────────────────────────────────────────
+  if (state === 'SCROLL_IN') {
+    introFrames--;
+    if (introFrames <= 0) state = 'PLAYING';
+    draw();
+    return;
+  }
+
+  // ── GAME_OVER ─────────────────────────────────────────────────
+  if (state === 'GAME_OVER') {
+    if (just['Space']) { state = 'TITLE'; }
+    draw();
+    just['Space'] = false;
+    return;
+  }
+
+  // ── PLAYING ───────────────────────────────────────────────────
+
+  // Input: fire
+  if (just['Space']) {
+    const active = bullets.find(b => b.active);
+    if (!active) {
+      bullets.push({ x: P.x, y: P.y - 8, active: true });
+    }
+  }
+
+  // Input: movement
+  if (P.alive) {
+    if (keys['ArrowRight'] || keys['KeyD']) {
+      P.vx = Math.min(P.vx + 1, MAX_SPEED_X);
+    } else if (keys['ArrowLeft'] || keys['KeyA']) {
+      P.vx = Math.max(P.vx - 1, -MAX_SPEED_X);
+    } else {
+      if (P.vx > 0) P.vx = Math.max(0, P.vx - 1);
+      else if (P.vx < 0) P.vx = Math.min(0, P.vx + 1);
+    }
+    if (keys['ArrowUp'] || keys['KeyW']) P.vy = -MAX_SPEED_Y;
+    else if (keys['ArrowDown'] || keys['KeyS']) P.vy = MAX_SPEED_Y;
+    else P.vy = 0;
+
+    P.x += P.vx;
+    P.y += P.vy;
+    P.x = Math.max(0, Math.min(P.x, W - 8));
+    P.y = Math.max(ROAD_H + 8, Math.min(P.y, H - ROAD_H - 8));
+  }
+
+  // Bullets
+  for (const b of bullets) {
+    b.y -= MISSILE_SPD;
+    if (b.y < 0) b.active = false;
+  }
+  bullets = bullets.filter(b => b.active);
+
+  // Spawning
+  spawner.blockCnt++;
+  if (spawner.blockCnt >= BLOCK_FRAMES) {
+    spawner.blockCnt = 0;
+    spawnBlock();
+  }
+
+  // Enemies move
+  for (const e of enemies) {
+    if (!e.alive) continue;
+    if (e.type === 4 || e.type === 5 || e.type === 6) {
+      e.x += e.dir;
+      if (e.x <= 0 || e.x >= W - 8) e.dir *= -1;
+    }
+    e.y += 1;
+    e.frame = (e.frame || 0) + 1;  // Cycle color
+  }
+  enemies = enemies.filter(e => e.alive && e.y < H + 20);
+
+  // Fuel descends
+  for (const f of fuel) {
+    f.y += 1;
+  }
+  fuel = fuel.filter(f => f.alive && f.y < H + 20);
+
+  // Explosions
+  for (const ex of explosions) {
+    ex.timer--;
+    if (ex.timer <= 0) ex.alive = false;
+  }
+  explosions = explosions.filter(e => e.alive);
+
+  // ── Collisions ────────────────────────────────────────────────
+
+  // Bullet → Enemy
+  for (const b of bullets) {
+    if (!b.active) continue;
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      if (rectsOverlap(b.x, b.y, 8, 8, e.x, e.y, 8, 8)) {
+        e.alive = false;
+        score += (SCORE_VAL[e.type] || 30) * multiplier;
+        multiplier = MULT_START;
+        addExplosion(e.x, e.y, 1);
+        b.active = false;
+        break;
+      }
+    }
+  }
+  bullets = bullets.filter(b => b.active);
+
+  // Bullet → Fuel (destroying fuel!)
+  for (const b of bullets) {
+    if (!b.active) continue;
+    for (const f of fuel) {
+      if (!f.alive) continue;
+      if (rectsOverlap(b.x, b.y, 8, 8, f.x, f.y, 8, 11)) {
+        f.alive = false;
+        addExplosion(f.x, f.y, 1);
+        b.active = false;
+        break;
+      }
+    }
+  }
+  bullets = bullets.filter(b => b.active);
+
+  // Player → Fuel (refueling)
+  for (const f of fuel) {
+    if (!f.alive) continue;
+    if (rectsOverlap(P.x, P.y, 8, 18, f.x, f.y, 8, 11)) {
+      P.fuel = Math.min(P.fuel + FUEL_REFUEL, FUEL_MAX);
+      f.alive = false;
+      addExplosion(f.x, f.y, 1);
+      break;
+    }
+  }
+
+  // Player → River banks
+  const leftBank = Math.floor(river.center - river.width / 2);
+  const rightBank = Math.floor(river.center + river.width / 2);
+  if (P.alive) {
+    const inRoad = P.y + 18 < ROAD_H || P.y > H - ROAD_H;
+    if (!inRoad) {
+      if (P.x < leftBank || P.x + 8 > rightBank) {
+        playerCrash();
+      }
+    }
+  }
+
+  // Player → Enemy
+  if (P.alive) {
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      if (rectsOverlap(P.x, P.y, 8, 18, e.x, e.y, 8, 8)) {
+        playerCrash();
+        e.alive = false;
+        break;
+      }
+    }
+  }
+
+  // Scoring multiplier decay
+  multDecay++;
+  if (multDecay >= 5) {
+    multDecay = 0;
+    multiplier = Math.max(1, multiplier - 1);
+  }
+
+  // Fuel depletion
+  P.fuel = Math.max(0, P.fuel - FUEL_DRAIN);
+  if (P.fuel <= 0 && P.alive) {
+    addExplosion(P.x, P.y, 2);
+    P.alive = false;
+  }
+
+  // Explode timer
+  if (!P.alive) {
+    P.explodeFrames--;
+    if (P.explodeFrames <= 0) {
+      P.lives--;
+      if (P.lives > 0) {
+        P.alive = true;
+        P.x = W / 2;
+        P.y = JET_Y;
+        P.vx = 0;
+        P.fuel = FUEL_MAX;
+      }
+    }
+  }
+
+  // Check game over
+  if (P.lives <= 0 && !P.alive) {
+    state = 'GAME_OVER';
+  }
+
+  // ── River update ──────────────────────────────────────────────
+  river.blockCnt++;
+  if (river.blockCnt >= 8) {
+    river.blockCnt = 0;
+    river.sectionsLeft--;
+    if (river.sectionsLeft <= 0) {
+      river.sectionsLeft = SECTION_BLOCKS;
+    }
+    const mn = river.width / 2 + 4;
+    const mx = W - river.width / 2 - 4;
+    river.tgtCenter = Math.floor(rng() * (mx - mn + 1)) + mn;
+    river.tgtWidth = Math.floor(rng() * 81) + 50;
+    // Map bank width to pf1PatId (like Python's calc_pf1PatId)
+    const bankHalfW = Math.floor(river.width / 2);
+    river.pf1PatId = Math.min(Math.floor(bankHalfW / 2), 8);
+    if (rng() < 0.15 && river.tgtWidth > 8) {
+      river.island = true;
+    } else {
+      river.island = false;
+    }
+  }
+  river.center += (river.tgtCenter - river.center) / 4;
+  river.width += (river.tgtWidth - river.width) / 4;
+
+  // Clear consumed just-pressed
+  for (const k in just) just[k] = false;
+
+  draw();
+}
+
+function rectsOverlap(x1,y1,w1,h1, x2,y2,w2,h2) {
+  return x1 < x2+w2 && x1+w1 > x2 && y1 < y2+h2 && y1+h1 > y2;
+}
+
+function playerCrash() {
+  if (P.alive) {
+    P.alive = false;
+    P.explodeFrames = 4;
+  }
+}
+
+// ── Draw ────────────────────────────────────────────────────────────
+function draw() {
+  g.clearRect(0, 0, W, H);
+
+  if (state === 'TITLE') { drawTitle(); return; }
+  if (state === 'SCROLL_IN') { drawScrollIn(); return; }
+  if (state === 'GAME_OVER') { drawGameOver(); return; }
+
+  // Playing
+  drawRiver();
+  drawEntities();
+  drawHUD();
+
+  // Scale to display canvas
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(buf, 0, 0, W, H, 0, 0, canvas.width, canvas.height);
+}
+
+/**
+ * Draw the river using playfield patterns from ROM.
+ * Uses PFPat data and BankPtrTab for per-row bank shapes.
+ * Playfield colors: GREEN ($D2) / LIGHT_GREEN ($DA) – COLUPF
+ */
+function countLeadingOnes(byteVal) {
+  let count = 0;
+  for (let i = 7; i >= 0 && (byteVal & (1 << i)); i--) count++;
+  return count;
+}
+
+function countTrailingOnes(byteVal) {
+  let count = 0;
+  for (let i = 0; i < 8 && (byteVal & (1 << i)); i++) count++;
+  return count;
+}
+
+function drawRiver() {
+  // Background (water) — BLACK ($00) – COLUBK
+  rect(0, ROAD_H, W, H - ROAD_H*2, C.BLACK);
+
+  const lb = Math.floor(river.center - river.width / 2);
+  const rb = Math.floor(river.center + river.width / 2);
+
+  // Get the actual pattern from BankPtrTab
+  const patIdx = BANK_PTR_TAB[river.pf1PatId] || river.pf1PatId;
+  const pat = PFPAT[patIdx] || [];
+
+  // Draw bank using pattern data
+  for (let row = ROAD_H; row < H - ROAD_H; row++) {
+    const rowMod = ((row / 2)|0) % 2;
+    const rowColor = rowMod === 0 ? C.GREEN : C.LIGHT_GREEN;
+
+    // Determine which pattern byte to use for this row
+    const screenRow = row - ROAD_H;
+    const patRowIdx = screenRow % pat.length;
+    const patByte = pat[patRowIdx] || 0;
+
+    // Left bank: draw pixels from x=0 inward based on leading 1-bits
+    const leftPixels = countLeadingOnes(patByte);
+    for (let x = 0; x < leftPixels; x++) {
+      g.fillStyle = rowColor;
+      g.fillRect(x, row, 1, 1);
+    }
+
+    // Right bank: draw pixels from x=319 inward based on trailing 1-bits
+    const rightPixels = countTrailingOnes(patByte);
+    for (let x = 0; x < rightPixels; x++) {
+      g.fillStyle = rowColor;
+      g.fillRect(W - 1 - x, row, 1, 1);
+    }
+  }
+
+  // Road areas with RoadColorTab pattern
+  // $04=BLACK, $08=LIGHT_GREY, $1C=YELLOW
+  const roadColors = [
+    C.BLACK, C.BLACK,
+    C.LIGHT_GREY, C.LIGHT_GREY,
+    C.LIGHT_GREY, C.LIGHT_GREY,
+    C.LIGHT_GREY, C.LIGHT_GREY,
+    C.YELLOW,
+    C.LIGHT_GREY, C.LIGHT_GREY,
+    C.LIGHT_GREY, C.LIGHT_GREY,
+  ];
+  for (let row = 0; row < ROAD_H; row++) {
+    const rc = roadColors[row % roadColors.length];
+    rect(0, row, W, 1, rc);
+    rect(0, H - ROAD_H + row, W, 1, rc);
+  }
+}
+
+function drawEntities() {
+  // Enemies
+  for (const e of enemies) {
+    if (!e.alive) continue;
+    drawEnemy(e);
+  }
+
+  // Fuel depots — use extracted FuelA/FuelB sprites
+  for (const f of fuel) {
+    if (!f.alive) continue;
+    // Alternate between FuelA and FuelB based on timer
+    const sp = ((f.y / 4)|0) % 2 === 0 ? FuelA : FuelB;
+    // Background first (FuelCol: LIGHT_GREY rows), then RED sprite pixels on top
+    g.fillStyle = rgb(C.LIGHT_GREY);
+    g.fillRect(f.x, f.y, 8, 11);
+    g.fillStyle = rgb(C.RED);
+    for (let row = 0; row < sp.length; row++) {
+      for (let col = 0; col < sp[row].length; col++) {
+        if (sp[row][col]) {
+          g.fillRect(f.x + col, f.y + row, 1, 1);
+        }
+      }
+    }
+    // Red FUEL text overlay
+    g.fillStyle = rgb(C.RED);
+    // Draw "FUEL" text vertically
+    const fuelLetters = ['F','U','E','L'];
+    g.font = '8px monospace';
+    for (let i = 0; i < fuelLetters.length; i++) {
+      g.fillText(fuelLetters[i], f.x + 1, f.y + 3 + i * 3);
+    }
+  }
+
+  // Bullets
+  for (const b of bullets) {
+    if (!b.active) continue;
+    // COLUP1 comes from enemy color table; ORANGE is most common
+    rect(b.x, b.y, 1, 8, C.ORANGE);
+  }
+
+  // Player
+  if (P.alive) {
+    drawJet(P.x, P.y, P.vx !== 0);
+  } else {
+    // Draw explosion
+    if (P.explodeFrames > 0) {
+      drawJetExplode(P.x, P.y);
+    }
+  }
+
+  // Explosions
+  for (const ex of explosions) {
+    if (!ex.alive) continue;
+    let sp;
+    if (ex.type === 2) {
+      // Player explosion — bigger
+      sp = ex.timer > 3 ? Explosion2A : Explosion2B;
+    } else if (ex.timer > 3) {
+      sp = Explosion1A;
+    } else {
+      sp = Explosion1B;
+    }
+    const c = ex.timer % 2 === 0 ? C.ORANGE : C.RED;
+    drawSprite(sp, ex.x, ex.y, false, c);
+  }
+}
+
+function drawHUD() {
+  // Score
+  text('SCORE:'+score, 4, 14, C.YELLOW, 12);
+  text('x'+multiplier, W/2 - 6, 18, C.WHITE, 10);
+
+  const livesStr = 'LIVES:' + '1'.repeat(Math.min(P.lives, 9));
+  text(livesStr, W - g.measureText(livesStr).width - 4, 14, C.YELLOW, 12);
+
+  // Fuel gauge — original uses "E ½ A" style in grey box
+  const gy = H - 24;
+  // Grey background box
+  rect(4, gy - 2, 80, 16, C.DARK_BLUE);
+  text('FUEL', 6, gy + 10, C.YELLOW, 10);
+
+  // "E" label (Empty)
+  text('E', 60, gy + 10, C.GREY, 10);
+  // "A" label (Full)
+  text('A', 78, gy + 10, C.GREY, 10);
+
+  // Fuel bar segments
+  const bw = 20, bh = 8, gap = 2, sx = 64;
+  const fl = P.fuel / FUEL_MAX;
+  for (let i = 0; i < 5; i++) {
+    const bx = sx + i * (bw + gap);
+    const filled = fl >= (i+1)/5;
+    rect(bx, gy, bw, bh, filled ? C.YELLOW : C.GREY);
+    g.strokeStyle = rgb(C.BLACK);
+    g.strokeRect(bx, gy, bw, bh);
+  }
+}
+
+function text(str, x, y, c, sz) {
+  g.fillStyle = rgb(c); g.font = (sz||12)+'px monospace';
+  g.fillText(str, x, y);
+}
+
+function textCenter(str, x, y, c, sz) {
+  g.fillStyle = rgb(c); g.font = (sz||12)+'px monospace';
+  g.textAlign = 'center'; g.fillText(str, x, y);
+  g.textAlign = 'left';
+}
+
+function drawTitle() {
+  rect(0, 0, W, H, C.BLACK);
+  textCenter('RIVER RAID', W/2, 70, C.YELLOW, 36);
+  textCenter('JS Port', W/2, 100, C.WHITE, 18);
+  textCenter('PRESS SPACE TO START', W/2, 130, C.WHITE, 12);
+  textCenter('ARROW KEYS: Move jet', W/2, 170, C.WHITE, 12);
+  textCenter('SPACE: Fire', W/2, 190, C.WHITE, 12);
+  textCenter('Based on Atari (1982)', W/2, H-16, C.GREY, 10);
+}
+
+function drawScrollIn() {
+  drawRiver();
+  if (P.alive) drawJet(P.x, P.y, false);
+}
+
+function drawGameOver() {
+  rect(0, 0, W, H, C.BLACK);
+  textCenter('GAME OVER', W/2, 70, C.RED, 36);
+  textCenter('FINAL SCORE: '+score, W/2, 120, C.YELLOW, 20);
+  textCenter('PRESS SPACE TO CONTINUE', W/2, 160, C.WHITE, 14);
+}
+
+// ── Game Loop ───────────────────────────────────────────────────────
+let lastTime = 0;
+const FRAME_MS = 1000 / 60;
+
+function loop(ts) {
+  if (ts - lastTime >= FRAME_MS) {
+    lastTime = ts;
+    update();
+  }
+  requestAnimationFrame(loop);
+}
+
+// Start
+state = 'TITLE';
+draw();
+requestAnimationFrame(loop);
+
+// Auto-start after 2 seconds
+setTimeout(() => {
+  if (state === 'TITLE') {
+    state = 'SCROLL_IN';
+    introFrames = INTRO_FRAMES;
+    fullReset();
+  }
+}, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><title>River Raid plane family report</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:16px}.card{border:1px solid #444;background:#1a1a1a;padding:10px;margin:12px 0}.sprite{display:grid;grid-auto-rows:16px;gap:2px;margin:8px 0}.row{display:grid;grid-template-columns:repeat(8,16px);gap:2px}.px1{background:#ddd}.px0{background:#222}pre{background:#151515;padding:8px;white-space:pre-wrap}table{border-collapse:collapse}td,th{border:1px solid #444;padding:4px 8px}</style></head><body><h1>River Raid plane family report</h1><table><tr><th>Enemy table index</th><td>4</td></tr><tr><th>enemy_id_token</th><td>ID_PLANE</td></tr><tr><th>shapePtr1a_token</th><td><PlaneA-1</td></tr><tr><th>shapePtr1b_token</th><td><PlaneB-1</td></tr><tr><th>score_token</th><td>DIGIT_H * 1 | $80</td></tr></table><div class="card"><h2>PlaneA</h2><div>CPU $F388 | ROM 0x0388 | rows=9</div><div class="sprite"><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px1"></div><div class="px1"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px1"></div><div class="px0"></div><div class="px0"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div></div><div class="row"><div class="px1"></div><div class="px1"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px1"></div><div class="px1"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div></div><div>bytes: 00 00 00 00 00 30 4F C6 00</div><h3>Source</h3><pre>PlaneA:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $30 ; |  XX    |
+       .byte $4F ; | X  XXXX|
+       .byte $C6 ; |XX   XX |
+       .byte $00 ; |        |</pre></div><div class="card"><h2>PlaneB</h2><div>CPU $F3A9 | ROM 0x03A9 | rows=8</div><div class="sprite"><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px0"></div><div class="px0"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div><div class="row"><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div><div class="px1"></div></div><div class="row"><div class="px1"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div><div class="px0"></div></div></div><div>bytes: 00 00 00 00 00 38 FF 80</div><h3>Source</h3><pre>PlaneB:
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $00 ; |        |
+       .byte $38 ; |  XXX   |
+       .byte $FF ; |XXXXXXXX|
+       .byte $80 ; |X       |</pre></div><h2>Related dispatch snippets</h2><h3>EnemyIdTab</h3><pre>EnemyIdTab:
+       .byte ID_SHIP, ID_HELI0, ID_SHIP, ID_HELI0, ID_PLANE, ID_SHIP, ID_HELI0, ID_HELI0
+</pre><h3>shapePtr1aTab</h3><pre>shapePtr1aTab:
+       .byte <Explosion0-1, <Explosion1A-1, <Explosion2A-1, <Explosion1A-1
+       .byte <PlaneA-1, <Heli0A-1, <Heli1A-1, <ShipA-1, <BridgeA-1, <HouseA-1, <FuelA-1
+
+
+;===============================================================================
+; R O M - C O D E (Part 6)
+;===============================================================================
+</pre><h3>shapePtr1bTab</h3><pre>shapePtr1bTab:
+       .byte <Explosion0-1, <Explosion1B-1, <Explosion2B-1, <Explosion1B-1
+       .byte <PlaneB-1, <Heli0B-1, <Heli1B-1, <ShipB-1, <BridgeB-1, <HouseB-1, <FuelB-1
+
+; x-positions of new object:</pre><h3>ScoreTab</h3><pre>ScoreTab:
+       .byte 0, 0, 0, 0         ; EXPLOSIONS
+       .byte DIGIT_H * 1 | $80  ; PLANE      100
+       .byte DIGIT_H * 6        ; HELI        60
+       .byte DIGIT_H * 6        ; HELI        60
+       .byte DIGIT_H * 3        ; SHIP        30
+       .byte DIGIT_H * 5 |$80   ; BRIDGE     500
+       .byte 0                  ; HOUSE
+       .byte DIGIT_H * 8        ; FUEL        80
+
+; the data is stored for interlaced display:</pre><h3>AnimateIdTab</h3><pre>AnimateIdTab:
+       .byte 0                  ;
+       .byte ID_EXPLOSION2      ; start of explosion sequence
+       .byte ID_EXPLOSION3      ;
+       .byte ID_EXPLOSION0      ; end explosion with 0
+       .byte ID_PLANE           ; no animation for plane
+       .byte ID_HELI1           ; switch between..
+       .byte ID_HELI0           ; ..ID_HELI0 and ID_HELI1
+
+; these are the patterns, that are used to define the playfield:</pre></body></html>

@@ -1,0 +1,776 @@
+{
+  "source_rom": "/mnt/c/Users/vrock/Downloads/River Raid (USA).a26",
+  "source_asm": "/mnt/c/Users/vrock/Downloads/riverraid.asm",
+  "screenshot_context": "Five more visible objects beyond player jet, enemy plane, and helicopter.",
+  "objects": {
+    "Ship": {
+      "kind": "enemy_or_static_object",
+      "A": {
+        "label": "ShipA",
+        "cpu_addr": "$F3A2",
+        "rom_offset": "0x03A2",
+        "bytes": [
+          0,
+          0,
+          0,
+          124,
+          254,
+          120,
+          16
+        ],
+        "ascii": [
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+          "\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u00b7"
+        ]
+      },
+      "B": {
+        "label": "ShipB",
+        "cpu_addr": "$F381",
+        "rom_offset": "0x0381",
+        "bytes": [
+          0,
+          0,
+          0,
+          252,
+          255,
+          48,
+          16
+        ],
+        "ascii": [
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7",
+          "\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u00b7"
+        ]
+      },
+      "combined_or_ascii": [
+        "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+        "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+        "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7",
+        "\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u00b7"
+      ],
+      "combined_or_bytes": [
+        0,
+        0,
+        0,
+        252,
+        255,
+        120,
+        16
+      ],
+      "source": {
+        "A": [
+          "ShipA:",
+          "       .byte $00 ; |        |",
+          "       .byte $00 ; |        |",
+          "       .byte $00 ; |        |",
+          "       .byte $7C ; | XXXXX  |",
+          "       .byte $FE ; |XXXXXXX |",
+          "       .byte $78 ; | XXXX   |",
+          "       .byte $10 ; |   X    |"
+        ],
+        "B": [
+          "ShipB:",
+          "       .byte $00 ; |        |",
+          "       .byte $00 ; |        |",
+          "       .byte $00 ; |        |",
+          "       .byte $FC ; |XXXXXX  |",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $30 ; |  XX    |",
+          "       .byte $10 ; |   X    |"
+        ]
+      }
+    },
+    "Bridge": {
+      "kind": "enemy_or_static_object",
+      "A": {
+        "label": "BridgeA",
+        "cpu_addr": "$F375",
+        "rom_offset": "0x0375",
+        "bytes": [
+          66
+        ],
+        "ascii": [
+          "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7"
+        ]
+      },
+      "B": {
+        "label": "BridgeB",
+        "cpu_addr": "$F376",
+        "rom_offset": "0x0376",
+        "bytes": [
+          255,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255,
+          255,
+          66
+        ],
+        "ascii": [
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+          "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7"
+        ]
+      },
+      "combined_or_ascii": [
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7"
+      ],
+      "combined_or_bytes": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        66
+      ],
+      "source": {
+        "A": [
+          "BridgeA:",
+          "       .byte $42 ; | X    X |"
+        ],
+        "B": [
+          "BridgeB:",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $FF ; |XXXXXXXX|",
+          "       .byte $42 ; | X    X |"
+        ]
+      }
+    },
+    "FuelTank": {
+      "kind": "enemy_or_static_object",
+      "A": {
+        "label": "FuelA",
+        "cpu_addr": "$F35E",
+        "rom_offset": "0x035E",
+        "bytes": [
+          254,
+          222,
+          222,
+          254,
+          222,
+          222,
+          254,
+          214,
+          214,
+          222,
+          206
+        ],
+        "ascii": [
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u00b7\u2588\u2588\u2588\u00b7"
+        ]
+      },
+      "B": {
+        "label": "FuelB",
+        "cpu_addr": "$F369",
+        "rom_offset": "0x0369",
+        "bytes": [
+          198,
+          222,
+          222,
+          198,
+          206,
+          198,
+          198,
+          214,
+          254,
+          222,
+          222,
+          124
+        ],
+        "ascii": [
+          "\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u00b7\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u00b7\u2588\u2588\u00b7",
+          "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+          "\u00b7\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7"
+        ]
+      },
+      "combined_or_ascii": [
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u00b7\u2588\u2588\u00b7",
+        "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u2588\u2588\u00b7\u2588\u2588\u2588\u2588\u00b7",
+        "\u00b7\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7"
+      ],
+      "combined_or_bytes": [
+        254,
+        222,
+        222,
+        254,
+        222,
+        222,
+        254,
+        214,
+        254,
+        222,
+        222,
+        124
+      ],
+      "source": {
+        "A": [
+          "FuelA:",
+          "       .byte $FE ; |XXXXXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $FE ; |XXXXXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $FE ; |XXXXXXX |",
+          "       .byte $D6 ; |XX X XX |",
+          "       .byte $D6 ; |XX X XX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $CE ; |XX  XXX |"
+        ],
+        "B": [
+          "FuelB:",
+          "       .byte $C6 ; |XX   XX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $C6 ; |XX   XX |",
+          "       .byte $CE ; |XX  XXX |",
+          "       .byte $C6 ; |XX   XX |",
+          "       .byte $C6 ; |XX   XX |",
+          "       .byte $D6 ; |XX X XX |",
+          "       .byte $FE ; |XXXXXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $DE ; |XX XXXX |",
+          "       .byte $7C ; | XXXXX  |"
+        ]
+      }
+    },
+    "ScoreHUD": {
+      "kind": "hud_score_digits",
+      "score_text": "904720",
+      "digit_labels": [
+        "Nine",
+        "Zero",
+        "Four",
+        "Seven",
+        "Two",
+        "Zero"
+      ],
+      "composite_ascii": [
+        "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7",
+        "\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u00b7\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+        "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7"
+      ],
+      "digit_sources": {
+        "Zero": {
+          "bytes": [
+            60,
+            102,
+            102,
+            102,
+            102,
+            102,
+            102,
+            60
+          ],
+          "ascii": [
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7"
+          ],
+          "cpu_addr": "$FB00",
+          "rom_offset": "0x0B00",
+          "source": [
+            "Zero:",
+            "       .byte $3C ; |  XXXX  | $FB00",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $3C ; |  XXXX  |"
+          ]
+        },
+        "Two": {
+          "bytes": [
+            126,
+            96,
+            96,
+            60,
+            6,
+            6,
+            70,
+            60
+          ],
+          "ascii": [
+            "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7"
+          ],
+          "cpu_addr": "$FB10",
+          "rom_offset": "0x0B10",
+          "source": [
+            "Two:",
+            "       .byte $7E ; | XXXXXX |",
+            "       .byte $60 ; | XX     |",
+            "       .byte $60 ; | XX     |",
+            "       .byte $3C ; |  XXXX  |",
+            "       .byte $06 ; |     XX |",
+            "       .byte $06 ; |     XX |",
+            "       .byte $46 ; | X   XX |",
+            "       .byte $3C ; |  XXXX  |"
+          ]
+        },
+        "Four": {
+          "bytes": [
+            12,
+            12,
+            12,
+            126,
+            76,
+            44,
+            28,
+            12
+          ],
+          "ascii": [
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u2588\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7"
+          ],
+          "cpu_addr": "$FB20",
+          "rom_offset": "0x0B20",
+          "source": [
+            "Four:",
+            "       .byte $0C ; |    XX  |",
+            "       .byte $0C ; |    XX  |",
+            "       .byte $0C ; |    XX  |",
+            "       .byte $7E ; | XXXXXX |",
+            "       .byte $4C ; | X  XX  |",
+            "       .byte $2C ; |  X XX  |",
+            "       .byte $1C ; |   XXX  |",
+            "       .byte $0C ; |    XX  |"
+          ]
+        },
+        "Seven": {
+          "bytes": [
+            24,
+            24,
+            24,
+            24,
+            12,
+            6,
+            66,
+            126
+          ],
+          "ascii": [
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7",
+            "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u00b7"
+          ],
+          "cpu_addr": "$FB38",
+          "rom_offset": "0x0B38",
+          "source": [
+            "Seven:",
+            "       .byte $18 ; |   XX   |",
+            "       .byte $18 ; |   XX   |",
+            "       .byte $18 ; |   XX   |",
+            "       .byte $18 ; |   XX   |",
+            "       .byte $0C ; |    XX  |",
+            "       .byte $06 ; |     XX |",
+            "       .byte $42 ; | X    X |",
+            "       .byte $7E ; | XXXXXX |"
+          ]
+        },
+        "Nine": {
+          "bytes": [
+            60,
+            70,
+            6,
+            62,
+            102,
+            102,
+            102,
+            60
+          ],
+          "ascii": [
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u00b7\u2588\u2588\u2588\u2588\u00b7\u00b7"
+          ],
+          "cpu_addr": "$FB48",
+          "rom_offset": "0x0B48",
+          "source": [
+            "Nine:",
+            "       .byte $3C ; |  XXXX  |",
+            "       .byte $46 ; | X   XX |",
+            "       .byte $06 ; |     XX |",
+            "       .byte $3E ; |  XXXXX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $66 ; | XX  XX |",
+            "       .byte $3C ; |  XXXX  |"
+          ]
+        }
+      }
+    },
+    "FuelHUD": {
+      "kind": "hud_fuel_kernel_tables",
+      "rows": [
+        "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u2588 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u2588\u2588\u00b7\u2588\u2588 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u2588\u00b7\u2588\u2588\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u2588 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588 \u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+        "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
+      ],
+      "tables": {
+        "FuelTab0": {
+          "bytes": [
+            127,
+            64,
+            79,
+            72,
+            72,
+            78,
+            72,
+            72,
+            79,
+            64,
+            64,
+            76,
+            76,
+            76,
+            127
+          ],
+          "ascii": [
+            "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u2588",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u2588\u2588",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
+          ],
+          "cpu_addr": "$F300",
+          "rom_offset": "0x0300",
+          "source": [
+            "FuelTab0:",
+            "       .byte $7F ; | XXXXXXX| $FE00",
+            "       .byte $40 ; | X      |",
+            "       .byte $4F ; | X  XXXX|",
+            "       .byte $48 ; | X  X   |",
+            "       .byte $48 ; | X  X   |",
+            "       .byte $4E ; | X  XXX |",
+            "       .byte $48 ; | X  X   |",
+            "       .byte $48 ; | X  X   |",
+            "       .byte $4F ; | X  XXXX|",
+            "       .byte $40 ; | X      |",
+            "       .byte $40 ; | X      |",
+            "       .byte $4C ; | X  XX  |",
+            "       .byte $4C ; | X  XX  |",
+            "       .byte $4C ; | X  XX  |",
+            "       .byte $7F ; | XXXXXXX|"
+          ]
+        },
+        "FuelTab1": {
+          "bytes": [
+            255
+          ],
+          "ascii": [
+            "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
+          ],
+          "cpu_addr": "$F30F",
+          "rom_offset": "0x030F",
+          "source": [
+            "FuelTab1:",
+            "       .byte $FF ; |XXXXXXXX|"
+          ]
+        },
+        "FuelTab2": {
+          "bytes": [
+            255,
+            0,
+            3,
+            194,
+            99,
+            48,
+            27,
+            236,
+            70,
+            67,
+            193,
+            72,
+            8,
+            8
+          ],
+          "ascii": [
+            "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588\u2588",
+            "\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u00b7",
+            "\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u2588\u2588",
+            "\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u2588\u2588",
+            "\u2588\u2588\u2588\u00b7\u2588\u2588\u00b7\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u2588\u2588\u00b7",
+            "\u00b7\u2588\u00b7\u00b7\u00b7\u00b7\u2588\u2588",
+            "\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u00b7\u2588\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u2588\u00b7\u00b7\u00b7"
+          ],
+          "cpu_addr": "$F31D",
+          "rom_offset": "0x031D",
+          "source": [
+            "FuelTab2:",
+            "       .byte $FF ; |XXXXXXXX|",
+            "       .byte $00 ; |        |",
+            "       .byte $03 ; |      XX|",
+            "       .byte $C2 ; |XX    X |",
+            "       .byte $63 ; | XX   XX|",
+            "       .byte $30 ; |  XX    |",
+            "       .byte $1B ; |   XX XX|",
+            "       .byte $EC ; |XXX XX  |",
+            "       .byte $46 ; | X   XX |",
+            "       .byte $43 ; | X    XX|",
+            "       .byte $C1 ; |XX     X|",
+            "       .byte $48 ; | X  X   |",
+            "       .byte $08 ; |    X   |",
+            "       .byte $08 ; |    X   |"
+          ]
+        },
+        "FuelTab3": {
+          "bytes": [
+            255,
+            0,
+            128,
+            0,
+            128,
+            128,
+            128,
+            0,
+            0,
+            0,
+            128,
+            0,
+            0,
+            0
+          ],
+          "ascii": [
+            "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7"
+          ],
+          "cpu_addr": "$F32B",
+          "rom_offset": "0x032B",
+          "source": [
+            "FuelTab3:",
+            "       .byte $FF ; |XXXXXXXX|",
+            "       .byte $00 ; |        |",
+            "       .byte $80 ; |X       |",
+            "       .byte $00 ; |        |",
+            "       .byte $80 ; |X       |",
+            "       .byte $80 ; |X       |",
+            "       .byte $80 ; |X       |",
+            "       .byte $00 ; |        |",
+            "       .byte $00 ; |        |",
+            "       .byte $00 ; |        |",
+            "       .byte $80 ; |X       |",
+            "       .byte $00 ; |        |",
+            "       .byte $00 ; |        |",
+            "       .byte $00 ; |        |"
+          ]
+        },
+        "FuelTab4": {
+          "bytes": [
+            255,
+            1,
+            129,
+            129,
+            129,
+            225,
+            129,
+            129,
+            241,
+            1,
+            1,
+            25,
+            25,
+            25,
+            255
+          ],
+          "ascii": [
+            "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u2588\u2588\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u2588\u2588\u2588\u2588\u00b7\u00b7\u00b7\u2588",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u2588",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+            "\u00b7\u00b7\u00b7\u2588\u2588\u00b7\u00b7\u2588",
+            "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
+          ],
+          "cpu_addr": "$F339",
+          "rom_offset": "0x0339",
+          "source": [
+            "FuelTab4:",
+            "       .byte $FF ; |XXXXXXXX|",
+            "       .byte $01 ; |       X|",
+            "       .byte $81 ; |X      X|",
+            "       .byte $81 ; |X      X|",
+            "       .byte $81 ; |X      X|",
+            "       .byte $E1 ; |XXX    X|",
+            "       .byte $81 ; |X      X|",
+            "       .byte $81 ; |X      X|",
+            "       .byte $F1 ; |XXXX   X|",
+            "       .byte $01 ; |       X|",
+            "       .byte $01 ; |       X|",
+            "       .byte $19 ; |   XX  X|",
+            "       .byte $19 ; |   XX  X|",
+            "       .byte $19 ; |   XX  X|",
+            "       .byte $FF ; |XXXXXXXX|"
+          ]
+        },
+        "ENABLTab": {
+          "bytes": [],
+          "ascii": [],
+          "cpu_addr": "$F348",
+          "rom_offset": "0x0348",
+          "source": [
+            "ENABLTab:"
+          ]
+        }
+      },
+      "note": "Conservative schematic: FuelTab0..4 shown as 8-bit cells, with ENABLTab shown as a centered marker column. This is table-faithful, not a pixel-perfect x-position reconstruction of the HUD kernel."
+    }
+  }
+}

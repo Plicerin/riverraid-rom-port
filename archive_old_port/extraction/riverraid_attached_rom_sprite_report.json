@@ -1,0 +1,642 @@
+{
+  "summary": {
+    "rom_path": "/mnt/c/Users/vrock/Downloads/River Raid (USA).a26",
+    "size": 4096,
+    "md5": "393948436d1f4cc3192410bb918f9724",
+    "sha1": "40329780402f8247f294fe884ffc56cc3da0c62d",
+    "sha256": "4c6842b8af64fc75e599b773821b3e6bee8e5028f5d63414821b0d63f0b2dfe9",
+    "total_variants": 22,
+    "unique_matches": 20,
+    "missing_matches": [],
+    "ambiguous_matches": {
+      "Explosion0": 8,
+      "BridgeA": 5
+    }
+  },
+  "records": [
+    {
+      "family": "Explosion0",
+      "name": "Explosion0",
+      "height": 13,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000"
+      ],
+      "bytes_hex": "00 00 00 00 00 00 00 00 00 00 00 00 00",
+      "matches": [
+        {
+          "rom_offset": "0x0C00",
+          "cpu_addr": "$FC00"
+        },
+        {
+          "rom_offset": "0x0C01",
+          "cpu_addr": "$FC01"
+        },
+        {
+          "rom_offset": "0x0C02",
+          "cpu_addr": "$FC02"
+        },
+        {
+          "rom_offset": "0x0C03",
+          "cpu_addr": "$FC03"
+        },
+        {
+          "rom_offset": "0x0C04",
+          "cpu_addr": "$FC04"
+        },
+        {
+          "rom_offset": "0x0C05",
+          "cpu_addr": "$FC05"
+        },
+        {
+          "rom_offset": "0x0C06",
+          "cpu_addr": "$FC06"
+        },
+        {
+          "rom_offset": "0x0E10",
+          "cpu_addr": "$FE10"
+        }
+      ],
+      "unique": false
+    },
+    {
+      "family": "Explosion1",
+      "name": "Explosion1A",
+      "height": 9,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000100",
+        "00000010",
+        "00001000",
+        "00000100",
+        "00000000"
+      ],
+      "bytes_hex": "00 00 00 00 04 02 08 04 00",
+      "matches": [
+        {
+          "rom_offset": "0x0ECA",
+          "cpu_addr": "$FECA"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Explosion1",
+      "name": "Explosion1B",
+      "height": 8,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00010000",
+        "00100000",
+        "01000000",
+        "00010000"
+      ],
+      "bytes_hex": "00 00 00 00 10 20 40 10",
+      "matches": [
+        {
+          "rom_offset": "0x0EC2",
+          "cpu_addr": "$FEC2"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Explosion2",
+      "name": "Explosion2A",
+      "height": 11,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000100",
+        "10001000",
+        "00010000",
+        "00000100",
+        "10000000",
+        "00010000",
+        "00000000",
+        "00000000"
+      ],
+      "bytes_hex": "00 00 00 04 88 10 04 80 10 00 00",
+      "matches": [
+        {
+          "rom_offset": "0x0EDC",
+          "cpu_addr": "$FEDC"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Explosion2",
+      "name": "Explosion2B",
+      "height": 9,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00100000",
+        "00000010",
+        "01000001",
+        "00100000",
+        "00000010",
+        "00000100"
+      ],
+      "bytes_hex": "00 00 00 20 02 41 20 02 04",
+      "matches": [
+        {
+          "rom_offset": "0x0ED3",
+          "cpu_addr": "$FED3"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Plane",
+      "name": "PlaneA",
+      "height": 9,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00110000",
+        "01001111",
+        "11000110",
+        "00000000"
+      ],
+      "bytes_hex": "00 00 00 00 00 30 4F C6 00",
+      "matches": [
+        {
+          "rom_offset": "0x0E88",
+          "cpu_addr": "$FE88"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Plane",
+      "name": "PlaneB",
+      "height": 8,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00111000",
+        "11111111",
+        "10000000"
+      ],
+      "bytes_hex": "00 00 00 00 00 38 FF 80",
+      "matches": [
+        {
+          "rom_offset": "0x0EA9",
+          "cpu_addr": "$FEA9"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Heli0",
+      "name": "Heli0A",
+      "height": 9,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000100",
+        "11111111",
+        "10011111",
+        "00000100",
+        "00000111"
+      ],
+      "bytes_hex": "00 00 00 00 04 FF 9F 04 07",
+      "matches": [
+        {
+          "rom_offset": "0x0E99",
+          "cpu_addr": "$FE99"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Heli0",
+      "name": "Heli0B",
+      "height": 8,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00001110",
+        "10001110",
+        "11111111",
+        "00001110",
+        "00011100"
+      ],
+      "bytes_hex": "00 00 00 0E 8E FF 0E 1C",
+      "matches": [
+        {
+          "rom_offset": "0x0EBA",
+          "cpu_addr": "$FEBA"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Heli1",
+      "name": "Heli1A",
+      "height": 9,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000100",
+        "11111111",
+        "10011111",
+        "00000100",
+        "00011100"
+      ],
+      "bytes_hex": "00 00 00 00 04 FF 9F 04 1C",
+      "matches": [
+        {
+          "rom_offset": "0x0EB1",
+          "cpu_addr": "$FEB1"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Heli1",
+      "name": "Heli1B",
+      "height": 8,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00001110",
+        "10001110",
+        "11111111",
+        "00001110",
+        "00000111"
+      ],
+      "bytes_hex": "00 00 00 0E 8E FF 0E 07",
+      "matches": [
+        {
+          "rom_offset": "0x0E91",
+          "cpu_addr": "$FE91"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Ship",
+      "name": "ShipA",
+      "height": 7,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "01111100",
+        "11111110",
+        "01111000",
+        "00010000"
+      ],
+      "bytes_hex": "00 00 00 7C FE 78 10",
+      "matches": [
+        {
+          "rom_offset": "0x0EA2",
+          "cpu_addr": "$FEA2"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Ship",
+      "name": "ShipB",
+      "height": 7,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "11111100",
+        "11111111",
+        "00110000",
+        "00010000"
+      ],
+      "bytes_hex": "00 00 00 FC FF 30 10",
+      "matches": [
+        {
+          "rom_offset": "0x0E81",
+          "cpu_addr": "$FE81"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Bridge",
+      "name": "BridgeA",
+      "height": 1,
+      "width": 8,
+      "rows": [
+        "01000010"
+      ],
+      "bytes_hex": "42",
+      "matches": [
+        {
+          "rom_offset": "0x0062",
+          "cpu_addr": "$F062"
+        },
+        {
+          "rom_offset": "0x0B3E",
+          "cpu_addr": "$FB3E"
+        },
+        {
+          "rom_offset": "0x0DFE",
+          "cpu_addr": "$FDFE"
+        },
+        {
+          "rom_offset": "0x0E75",
+          "cpu_addr": "$FE75"
+        },
+        {
+          "rom_offset": "0x0E80",
+          "cpu_addr": "$FE80"
+        }
+      ],
+      "unique": false
+    },
+    {
+      "family": "Bridge",
+      "name": "BridgeB",
+      "height": 11,
+      "width": 8,
+      "rows": [
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "11111111",
+        "01000010"
+      ],
+      "bytes_hex": "FF FF FF FF FF FF FF FF FF FF 42",
+      "matches": [
+        {
+          "rom_offset": "0x0E76",
+          "cpu_addr": "$FE76"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "House",
+      "name": "HouseA",
+      "height": 14,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000100",
+        "00001110",
+        "00011111",
+        "00001110",
+        "00000100",
+        "00000000",
+        "11111110",
+        "10101010",
+        "11111110",
+        "00111000",
+        "00000000",
+        "00000000",
+        "00000000"
+      ],
+      "bytes_hex": "00 04 0E 1F 0E 04 00 FE AA FE 38 00 00 00",
+      "matches": [
+        {
+          "rom_offset": "0x0EF2",
+          "cpu_addr": "$FEF2"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "House",
+      "name": "HouseB",
+      "height": 11,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000100",
+        "00011111",
+        "00001110",
+        "00000100",
+        "00000100",
+        "00000000",
+        "10101010",
+        "11111110",
+        "01111100",
+        "00000000"
+      ],
+      "bytes_hex": "00 04 1F 0E 04 04 00 AA FE 7C 00",
+      "matches": [
+        {
+          "rom_offset": "0x0EE7",
+          "cpu_addr": "$FEE7"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Fuel",
+      "name": "FuelA",
+      "height": 11,
+      "width": 8,
+      "rows": [
+        "11111110",
+        "11011110",
+        "11011110",
+        "11111110",
+        "11011110",
+        "11011110",
+        "11111110",
+        "11010110",
+        "11010110",
+        "11011110",
+        "11001110"
+      ],
+      "bytes_hex": "FE DE DE FE DE DE FE D6 D6 DE CE",
+      "matches": [
+        {
+          "rom_offset": "0x0E5E",
+          "cpu_addr": "$FE5E"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "Fuel",
+      "name": "FuelB",
+      "height": 12,
+      "width": 8,
+      "rows": [
+        "11000110",
+        "11011110",
+        "11011110",
+        "11000110",
+        "11001110",
+        "11000110",
+        "11000110",
+        "11010110",
+        "11111110",
+        "11011110",
+        "11011110",
+        "01111100"
+      ],
+      "bytes_hex": "C6 DE DE C6 CE C6 C6 D6 FE DE DE 7C",
+      "matches": [
+        {
+          "rom_offset": "0x0E69",
+          "cpu_addr": "$FE69"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "PlayerJet",
+      "name": "JetStraight",
+      "height": 18,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00101010",
+        "00111110",
+        "00011100",
+        "00001000",
+        "01001001",
+        "01101011",
+        "01111111",
+        "01111111",
+        "00111110",
+        "00011100",
+        "00001000",
+        "00001000",
+        "00001000"
+      ],
+      "bytes_hex": "00 00 00 00 00 2A 3E 1C 08 49 6B 7F 7F 3E 1C 08 08 08",
+      "matches": [
+        {
+          "rom_offset": "0x0CBC",
+          "cpu_addr": "$FCBC"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "PlayerJet",
+      "name": "JetMove",
+      "height": 18,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000010",
+        "00101110",
+        "00111100",
+        "00011000",
+        "00001000",
+        "00001010",
+        "00101110",
+        "00111110",
+        "00111110",
+        "00111100",
+        "00011000",
+        "00001000",
+        "00001000",
+        "00001000"
+      ],
+      "bytes_hex": "00 00 00 00 02 2E 3C 18 08 0A 2E 3E 3E 3C 18 08 08 08",
+      "matches": [
+        {
+          "rom_offset": "0x0CCE",
+          "cpu_addr": "$FCCE"
+        }
+      ],
+      "unique": true
+    },
+    {
+      "family": "PlayerJet",
+      "name": "JetExplode",
+      "height": 17,
+      "width": 8,
+      "rows": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000000",
+        "00000010",
+        "00001000",
+        "00010000",
+        "00000000",
+        "01000000",
+        "00001000",
+        "00100001",
+        "01000100",
+        "00010000",
+        "00000100",
+        "00001000",
+        "00000000"
+      ],
+      "bytes_hex": "00 00 00 00 00 02 08 10 00 40 08 21 44 10 04 08 00",
+      "matches": [
+        {
+          "rom_offset": "0x0CE0",
+          "cpu_addr": "$FCE0"
+        }
+      ],
+      "unique": true
+    }
+  ]
+}

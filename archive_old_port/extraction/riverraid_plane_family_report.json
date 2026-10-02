@@ -1,0 +1,182 @@
+{
+  "family": "Plane",
+  "plane_index_in_enemy_tables": 4,
+  "plane_dispatch": {
+    "enemy_id_token": "ID_PLANE",
+    "shapePtr1a_token": "<PlaneA-1",
+    "shapePtr1b_token": "<PlaneB-1",
+    "score_token": "DIGIT_H * 1 | $80"
+  },
+  "sprites": {
+    "PlaneA": {
+      "cpu_addr": "$F388",
+      "rom_offset": "0x0388",
+      "rows": 9,
+      "bytes_hex": [
+        "00",
+        "00",
+        "00",
+        "00",
+        "00",
+        "30",
+        "4F",
+        "C6",
+        "00"
+      ],
+      "bytes_dec": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        48,
+        79,
+        198,
+        0
+      ],
+      "source_snippet": [
+        "PlaneA:",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $30 ; |  XX    |",
+        "       .byte $4F ; | X  XXXX|",
+        "       .byte $C6 ; |XX   XX |",
+        "       .byte $00 ; |        |"
+      ]
+    },
+    "PlaneB": {
+      "cpu_addr": "$F3A9",
+      "rom_offset": "0x03A9",
+      "rows": 8,
+      "bytes_hex": [
+        "00",
+        "00",
+        "00",
+        "00",
+        "00",
+        "38",
+        "FF",
+        "80"
+      ],
+      "bytes_dec": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        56,
+        255,
+        128
+      ],
+      "source_snippet": [
+        "PlaneB:",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $00 ; |        |",
+        "       .byte $38 ; |  XXX   |",
+        "       .byte $FF ; |XXXXXXXX|",
+        "       .byte $80 ; |X       |"
+      ]
+    }
+  },
+  "related_snippets": {
+    "shapePtr1bTab": [
+      "shapePtr1bTab:",
+      "       .byte <Explosion0-1, <Explosion1B-1, <Explosion2B-1, <Explosion1B-1",
+      "       .byte <PlaneB-1, <Heli0B-1, <Heli1B-1, <ShipB-1, <BridgeB-1, <HouseB-1, <FuelB-1",
+      "",
+      "; x-positions of new object:"
+    ],
+    "AnimateIdTab": [
+      "AnimateIdTab:",
+      "       .byte 0                  ;",
+      "       .byte ID_EXPLOSION2      ; start of explosion sequence",
+      "       .byte ID_EXPLOSION3      ;",
+      "       .byte ID_EXPLOSION0      ; end explosion with 0",
+      "       .byte ID_PLANE           ; no animation for plane",
+      "       .byte ID_HELI1           ; switch between..",
+      "       .byte ID_HELI0           ; ..ID_HELI0 and ID_HELI1",
+      "",
+      "; these are the patterns, that are used to define the playfield:"
+    ],
+    "ScoreTab": [
+      "ScoreTab:",
+      "       .byte 0, 0, 0, 0         ; EXPLOSIONS",
+      "       .byte DIGIT_H * 1 | $80  ; PLANE      100",
+      "       .byte DIGIT_H * 6        ; HELI        60",
+      "       .byte DIGIT_H * 6        ; HELI        60",
+      "       .byte DIGIT_H * 3        ; SHIP        30",
+      "       .byte DIGIT_H * 5 |$80   ; BRIDGE     500",
+      "       .byte 0                  ; HOUSE",
+      "       .byte DIGIT_H * 8        ; FUEL        80",
+      "",
+      "; the data is stored for interlaced display:"
+    ],
+    "PlaneA": [
+      "PlaneA:",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $30 ; |  XX    |",
+      "       .byte $4F ; | X  XXXX|",
+      "       .byte $C6 ; |XX   XX |",
+      "       .byte $00 ; |        |"
+    ],
+    "PlaneB": [
+      "PlaneB:",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $00 ; |        |",
+      "       .byte $38 ; |  XXX   |",
+      "       .byte $FF ; |XXXXXXXX|",
+      "       .byte $80 ; |X       |"
+    ],
+    "ColorPtrTab": [
+      "ColorPtrTab:",
+      "       .byte $49                ; explosion 0   (no extra data for explosion colors)",
+      "       .byte $2A                ; explosion 1",
+      "       .byte $66                ; explosion 2",
+      "       .byte $2A                ; explosion 3",
+      "       .byte <PlaneCol-6        ; plane",
+      "       .byte <HelicopterCol-4   ; helicopter",
+      "       .byte <HelicopterCol-4   ; helicopter",
+      "       .byte <ShipCol-4         ; ship",
+      "       .byte <BridgeCol-1       ; bridge",
+      "       .byte <HouseCol-2        ; house         (one byte shared!)",
+      "       .byte <FuelCol-1         ; fuel          (=$37)",
+      ""
+    ],
+    "EnemyIdTab": [
+      "EnemyIdTab:",
+      "       .byte ID_SHIP, ID_HELI0, ID_SHIP, ID_HELI0, ID_PLANE, ID_SHIP, ID_HELI0, ID_HELI0",
+      ""
+    ],
+    "shapePtr1aTab": [
+      "shapePtr1aTab:",
+      "       .byte <Explosion0-1, <Explosion1A-1, <Explosion2A-1, <Explosion1A-1",
+      "       .byte <PlaneA-1, <Heli0A-1, <Heli1A-1, <ShipA-1, <BridgeA-1, <HouseA-1, <FuelA-1",
+      "",
+      "",
+      ";===============================================================================",
+      "; R O M - C O D E (Part 6)",
+      ";===============================================================================",
+      ""
+    ],
+    "ColorTab": [
+      "ColorTab:",
+      "       .byte 0, YELLOW, GREY, YELLOW+2, BLUE",
+      "",
+      "       .word START",
+      "       .word 0"
+    ]
+  }
+}

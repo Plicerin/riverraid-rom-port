@@ -1,0 +1,12 @@
+# Large third-party tooling from the old port (emulators etc.)
+archive_old_port/tools/
+# Caches
+__pycache__/
+.pytest_cache/
+node_modules/
+# ROM binaries and archives that may contain them
+*.a26
+*.bin
+*.zip
+# Stray zero-byte file from a broken shell command
+*nnechonecho

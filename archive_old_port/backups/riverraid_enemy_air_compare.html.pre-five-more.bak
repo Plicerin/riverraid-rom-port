@@ -1,0 +1,157 @@
+<!doctype html><html><head><meta charset="utf-8"><title>River Raid enemy air compare</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:16px}pre{background:#151515;padding:8px;white-space:pre-wrap}.card{border:1px solid #444;background:#1a1a1a;padding:10px;margin:12px 0}</style></head><body><h1>River Raid enemy air sprite comparison</h1><div class="card"><h2>Plane</h2><h3>PlaneA — CPU $F388 ROM 0x0388</h3><pre>········
+········
+········
+········
+········
+··██····
+·█··████
+██···██·
+········</pre><h3>PlaneB — CPU $F3A9 ROM 0x03A9</h3><pre>········
+········
+········
+········
+········
+··███···
+████████
+█·······</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+········
+··AA····
+·ABB█AAA
+██BBB██B
+B·······</pre></div><div class="card"><h2>Heli0</h2><h3>Heli0A — CPU $F399 ROM 0x0399</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+·····███</pre><h3>Heli0B — CPU $F3BA ROM 0x03BA</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+···███··</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···BB█AA</pre></div><div class="card"><h2>Heli1</h2><h3>Heli1A — CPU $F3B1 ROM 0x03B1</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+···███··</pre><h3>Heli1B — CPU $F391 ROM 0x0391</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+·····███</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···AA█BB</pre></div>
+<section id="screenshot-matched-objects">
+<div class="card">
+<h2>Screenshot-matched objects</h2>
+<p>This section pulls the three objects matched directly to the provided screenshot: center player jet, upper-right enemy plane, and top-left helicopter.</p>
+</div>
+<div class="card">
+<h2>Player jet (center yellow craft)</h2>
+<h3>JetStraight — CPU $F1A2 ROM 0x01A2</h3>
+<pre>········
+········
+········
+········
+········
+··█·█·█·
+··█████·
+···███··
+····█···
+·█··█··█
+·██·█·██
+·███████
+·███████
+··█████·
+···███··
+····█···
+····█···
+····█···</pre>
+<p>Bytes: 00 00 00 00 00 2A 3E 1C 08 49 6B 7F 7F 3E 1C 08 08 08</p>
+</div>
+<div class="card">
+<h2>Enemy plane (upper-right small blue craft)</h2>
+<h3>Combined plane silhouette</h3>
+<pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre>
+<p>PlaneA — CPU $F388 ROM 0x0388 — bytes: 00 00 00 00 00 30 4F C6 00</p>
+<p>PlaneB — CPU $F3A9 ROM 0x03A9 — bytes: 00 00 00 00 00 38 FF 80</p>
+</div>
+<div class="card">
+<h2>Helicopter (top-left airborne object)</h2>
+<h3>Combined helicopter silhouette</h3>
+<pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre>
+<p>Best grounded match is the helicopter family; screenshot resolution is too low to separate Heli0 vs Heli1 by the tiny bottom-row difference.</p>
+<p>Heli0A — CPU $F399 ROM 0x0399 — bytes: 00 00 00 00 04 FF 9F 04 07</p>
+<p>Heli0B — CPU $F3BA ROM 0x03BA — bytes: 00 00 00 0E 8E FF 0E 1C</p>
+<p>Heli1A — CPU $F3B1 ROM 0x03B1 — bytes: 00 00 00 00 04 FF 9F 04 1C</p>
+<p>Heli1B — CPU $F391 ROM 0x0391 — bytes: 00 00 00 0E 8E FF 0E 07</p>
+</div>
+</section><!-- /screenshot-matched-objects -->
+</body></html>

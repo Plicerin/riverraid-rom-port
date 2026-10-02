@@ -1,0 +1,177 @@
+"""Headless render of the JS port's river model to PNG for visual verification.
+
+Mirrors the logic in index.html: bankEdgesForRow / drawRiver / advanceRiver.
+"""
+import random
+from PIL import Image
+
+W, H = 320, 240
+ROAD_H = 13
+RIVER_ROWS = H - ROAD_H * 2
+PF_PX = 16
+BLOCK_FRAMES = 32
+SECTION_BLOCKS = 16
+NUM_BLOCKS = 6
+
+PFPAT = [
+  [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x03,0x07,0x0F,0x1F],
+  [0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0xFF,0x80,0x7F,0x40,0x4F,0x48,0x48,0x4E],
+  [0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0,0xC0],
+  [0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xE0,0xC0,0x80],
+  [0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xF0,0xE0,0xC0,0x80,0xC0],
+  [0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0],
+  [0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0],
+  [0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0,0xF8],
+  [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFE,0xFC,0xF8,0xF0,0xE0,0xC0,0x80,0xC0,0xE0,0xF0,0xF8,0xFC],
+  [0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x2A,0x3E,0x1C,0x08],
+  [0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+  [0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01],
+  [0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01],
+  [0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+  [0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x1F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00],
+]
+
+BLUE = (0, 40, 104)
+GREEN = (0, 180, 0)
+LIGHT_GREEN = (0, 224, 0)
+BLACK = (0, 0, 0)
+GREY = (48, 48, 48)
+LIGHT_GREY = (96, 96, 96)
+YELLOW = (253, 244, 152)
+
+def left_bank_pixels(b):
+    n = 0
+    for i in range(7, -1, -1):
+        if b & (1 << i):
+            n += 1
+        else:
+            break
+    return n
+
+class River:
+    def __init__(self, seed=42):
+        self.rng = random.Random(seed)
+        self.blocks = [8] * NUM_BLOCKS
+        self.block_colors = [i % 2 for i in range(NUM_BLOCKS)]
+        self.scroll_row = 0
+        self.section_blocks_left = SECTION_BLOCKS
+        self.block_part = 2
+        self.pf_state = 0
+        self.prev_pat_id = 12
+        self.pat_id = 12
+        self.level = 1
+        self.valley_width = 0
+
+    def advance(self):
+        self.scroll_row += 1
+        if self.scroll_row >= BLOCK_FRAMES:
+            self.scroll_row = 0
+            self._gen()
+
+    def _gen(self):
+        self.blocks = self.blocks[1:] + [self.blocks[-1]]
+        self.block_colors = self.block_colors[1:] + [self.block_colors[-1]]
+        self.block_part -= 1
+        if self.block_part == 0:
+            self.block_part = 2
+            self.section_blocks_left -= 1
+            if self.section_blocks_left == 0:
+                self._section_end(); return
+            self._next()
+        else:
+            self.section_blocks_left -= 1
+            if self.section_blocks_left == 0:
+                self._section_end(); return
+            self.prev_pat_id = self.pat_id
+            self.pat_id = 12
+            self.blocks[-1] = 12
+            self.block_colors[-1] = 0
+            return
+        self._next()
+
+    def _section_end(self):
+        self.section_blocks_left = SECTION_BLOCKS
+        self.level = min(self.level + 1, 48)
+        self.prev_pat_id = 12
+        self.pat_id = 12
+        self.blocks[-1] = 12
+        self.block_colors[-1] = 0
+
+    def _next(self):
+        raw = int(self.rng.random() * 16)
+        if raw < 2: raw = 2
+        max_id = 14
+        if self.pf_state & 0x80: max_id = 13
+        if self.valley_width > 0: max_id = 8
+        if raw > max_id: raw = max_id
+        self.prev_pat_id = self.pat_id
+        self.pat_id = raw
+        self.blocks[-1] = raw
+        self.block_colors[-1] = 0 if self.level % 2 == 0 else 1
+
+    def _block_idx_for_row(self, river_row):
+        block_h = BLOCK_FRAMES
+        from_bottom = (RIVER_ROWS - 1 - river_row) // block_h
+        idx = NUM_BLOCKS - 1 - from_bottom
+        return max(0, min(NUM_BLOCKS - 1, idx))
+
+    def bank_edges(self, river_row):
+        block_h = BLOCK_FRAMES
+        from_bottom = (RIVER_ROWS - 1 - river_row) // block_h
+        block_idx = max(0, min(NUM_BLOCKS - 1, NUM_BLOCKS - 1 - from_bottom))
+        row_in_block = (RIVER_ROWS - 1 - river_row) % block_h
+        pat = PFPAT[self.blocks[block_idx]]
+        pat_row = row_in_block
+        if block_idx == NUM_BLOCKS - 1:
+            pat_row = (row_in_block + self.scroll_row) % len(pat)
+        byte_val = pat[pat_row % len(pat)]
+        lp = left_bank_pixels(byte_val)
+        return lp * PF_PX, W - lp * PF_PX, lp
+
+    def block_color_for_row(self, river_row):
+        block_h = BLOCK_FRAMES
+        from_bottom = (RIVER_ROWS - 1 - river_row) // block_h
+        idx = max(0, min(NUM_BLOCKS - 1, NUM_BLOCKS - 1 - from_bottom))
+        return self.block_colors[idx]
+
+def render(river, frames=200):
+    for _ in range(frames):
+        river.advance()
+    img = Image.new('RGB', (W * 2, H * 2), BLACK)
+    px = img.load()
+    # water
+    for y in range(ROAD_H, H - ROAD_H):
+        for x in range(W):
+            px[x * 2, y * 2] = BLUE
+            px[x * 2 + 1, y * 2] = BLUE
+            px[x * 2, y * 2 + 1] = BLUE
+            px[x * 2 + 1, y * 2 + 1] = BLUE
+    # banks
+    for river_row in range(RIVER_ROWS):
+        y = river_row + ROAD_H
+        left_x, right_x, lp = river.bank_edges(river_row)
+        col = GREEN if river.block_color_for_row(river_row) == 0 else LIGHT_GREEN
+        for x in range(left_x):
+            px[x * 2, y * 2] = col; px[x * 2 + 1, y * 2] = col
+            px[x * 2, y * 2 + 1] = col; px[x * 2 + 1, y * 2 + 1] = col
+        for x in range(right_x, W):
+            px[x * 2, y * 2] = col; px[x * 2 + 1, y * 2] = col
+            px[x * 2, y * 2 + 1] = col; px[x * 2 + 1, y * 2 + 1] = col
+    # roads
+    road = [BLACK, BLACK, LIGHT_GREY, LIGHT_GREY, LIGHT_GREY, LIGHT_GREY,
+            LIGHT_GREY, LIGHT_GREY, YELLOW, LIGHT_GREY, LIGHT_GREY, LIGHT_GREY, LIGHT_GREY]
+    for r in range(ROAD_H):
+        c = road[r % len(road)]
+        for x in range(W):
+            px[x * 2, r * 2] = c; px[x * 2 + 1, r * 2] = c
+            px[x * 2, r * 2 + 1] = c; px[x * 2 + 1, r * 2 + 1] = c
+            py = H - ROAD_H + r
+            px[x * 2, py * 2] = c; px[x * 2 + 1, py * 2] = c
+            px[x * 2, py * 2 + 1] = c; px[x * 2 + 1, py * 2 + 1] = c
+    return img
+
+if __name__ == '__main__':
+    r = River()
+    img = render(r)
+    img.save('verify/river_render.png')
+    print('saved verify/river_render.png', img.size)

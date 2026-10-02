@@ -1,0 +1,13 @@
+{
+  "name": "riverraid-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser port of Atari 2600 River Raid (1982). Source is a flat ESM graph under src/; build.mjs produces a single content-hashed bundle under dist/ that index.html references directly.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.20.2"
+  }
+}

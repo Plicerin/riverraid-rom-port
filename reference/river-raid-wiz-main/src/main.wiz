@@ -1,0 +1,738 @@
+import "vcs";
+
+bank rom @ 0xF000 : [constdata; 4096];
+bank ram @ 0x80 : [vardata; 128];
+
+
+// C O N S T A N T S
+
+// Initial values for the random number generator:
+let SEED_LO         = 0x14;           // change "to go, where no one has gone before" :)
+let SEED_HI         = 0xA8;
+
+// Color constants:
+let BLACK           = 0x00;
+let GREY            = 0x06;
+let ORANGE          = 0x2A;
+// let   IF NTSC
+let YELLOW          = 0x1C;
+let RED             = 0x48;
+let BLUE            = 0x84;
+let CYAN            = 0xB0;
+let GREEN           = 0xD2;
+// let   ELSE
+// let YELLOW          = 0x2C
+// let RED             = 0x68
+// let BLUE            = 0xB4
+// let CYAN            = 0x70
+// let GREEN           = 0x52
+// let   ENDIF
+let DARK_RED        = RED    - 0x6;
+let LIGHT_GREEN     = GREEN  + 0x8;
+let BROWN           = YELLOW - 0xC;
+let LIGHT_GREY      = GREY   + 0x6;
+let DARK_BLUE       = BLUE   - 0x4;
+
+// ; main game constants:
+// NUM_BLOCKS      = 6             ; max. number of block on screen
+// SECTION_BLOCKS  = 16            ; number of blocks/stage
+// BLOCK_PARTS     = 2             ; each block has two parts
+// BLOCK_SIZE      = 32            ; number of lines/block
+// let NUM_LINES      = 160;           // number of lines in main kernel
+// MAX_LEVEL       = 48            ; number of difficulty levels
+
+// DIGIT_H         = 8             ; height of the score digits
+// let JET_Y           = 19;            // fixed y-position for jet
+// MIN_MISSILE     = JET_Y-6       ; starting position of player missile
+// MAX_MISSILE     = NUM_LINES+1
+// MISSILE_SPEED   = 6             ; y-speed of the jet missile
+// ROAD_HEIGHT     = 13            ; number of lines for road
+// INTRO_SCROLL    = 48            ; counter for scrolling into new game
+
+// SWITCH_PAGE_ID  = 9             ; first pattern id with data on different page
+
+// ; constants for shape-ids:
+// ID_EXPLOSION0   = 0             ; used for explosion end
+// ID_EXPLOSION1   = 1
+// ID_EXPLOSION2   = 2
+// ID_EXPLOSION3   = 3
+// ID_PLANE        = 4
+// ID_HELI0        = 5
+// ID_HELI1        = 6
+// ID_SHIP         = 7
+// ID_BRIDGE       = 8
+// ID_HOUSE        = 9
+// ID_FUEL         = 10
+
+// ; flags for blockLst:
+// PF1_PAGE_FLAG   = %00000001     ; pattern for PF1 in page $FC or $FD
+// PF2_PAGE_FLAG   = %00000010     ; pattern for PF1 in page $FC or $FD
+let PF_COLOR_FLAG  = 0b00000100;     // bright or dark green PF
+// PATROL_FLAG     = %00010000     ; enemy is patroling (change directions)
+// PF_COLLIDE_FLAG = %00100000     ; enemy collided with playfield
+// ENEMY_MOVE_FLAG = %01000000     ; enemy is moving
+// PF_ROAD_FLAG    = %10000000     ; display road and bridge
+
+// ; flags for State1Lst:
+// DIRECTION_FLAG  = %00001000     ; move direction of object
+// FINE_MASK       = %11110000     ; mask bits for HMxy
+// NUSIZ_MASK      = %00000111     ; mask bits for NUSIx
+
+// ; flags for PF_State:
+// ISLAND_FLAG     = %10000000     ; island displayed in block
+// CHANGE_FLAG     = %01000000     ; begin or end of island (JTZ: this interpretation might be wrong)
+
+// ; joystick bits:
+// MOVE_RIGHT      = %00001000
+// MOVE_LEFT       = %00000100
+// MOVE_DOWN       = %00000010
+// MOVE_UP         = %00000001
+
+// ; values for ENAxy:
+// DISABLE         = %00
+// ENABLE          = %10           ; value for enabling a missile
+
+// ; values for NUSIZx:
+// TWO_COPIES      = %001
+// THREE_COPIES    = %011
+// DOUBLE_SIZE     = %101
+// QUAD_SIZE       = %111
+
+// ; mask for SWCHB:
+// BW_MASK         = %1000         ; black and white bit
+
+
+in ram {
+    // main game constants:
+
+    let NUM_BLOCKS      = 6;
+    // max. number of block on screen
+    let SECTION_BLOCKS  = 16;
+    // number of blocks/stage
+    let BLOCK_PARTS     = 2;
+    // each block has two parts
+    let BLOCK_SIZE      = 32;
+    // number of lines/block
+    let NUM_LINES       = 160;
+    // number of lines in main kernel
+    let MAX_LEVEL       = 48;
+
+    // number of difficulty levels
+    let DIGIT_H         = 8;
+    // height of the score digits
+    let JET_Y           = 19;
+    // fixed y-position for jet
+    let MIN_MISSILE     = JET_Y - 6;
+    // starting position of player missile
+    let MAX_MISSILE     = NUM_LINES + 1;
+    // y-speed of the jet missile
+    let MISSILE_SPEED   = 6;
+    // number of lines for road
+    let ROAD_HEIGHT     = 13;
+    // counter for scrolling into new game
+    let INTRO_SCROLL    = 48;
+
+    // first pattern id with data on different page
+    let SWITCH_PAGE_ID  = 9;
+
+
+    // One or two player game
+    var gameVariation: u8;
+    // Delay before gameVariation changes
+    var gameDelay: u8;
+    // Simple frame counter
+    var frameCnt: u8;
+    // 8 bit random number (used for: start of ship and helicopter, sound)
+    var random: u8;
+    // saved joystick value (?000rldu)
+    var joystick: u8;
+    // change colors in screensaver mode (0/$01..$ff)
+    var SS_XOR: u8;
+    // darker colors in screensaver mode ($ff/$f7)
+    var SS_Mask: u8;
+    // x-acceleration
+    var dXSpeed: u8;
+    // playfield pattern Id of the previous block
+    var prevPF1PatId: u8;
+    // io000000
+    var PF_State: u8;
+    // 0 = end of section
+    var sectionEnd: u8;
+    // offset into first displayed block
+    var blockOffset: u8;
+    // low value of blockOffset
+    var posYLo: u8;
+    // counter for bridge explosion
+    var bridgeExplode: u8;
+
+    // the next 36 bytes are used to save all variables for six blocks:
+    //---------------------------------------
+    // ..$93         flags for block definition
+    var blockLst        @ 0x8E: [u8; NUM_BLOCKS];
+    var blockLstEnd     @ &blockLst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    // ..$99         coarse value for x-positioning of object
+    var XPos1Lst        @ 0x94: [u8; NUM_BLOCKS];
+    var XPos1LstEnd     @ &XPos1Lst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    // ..$9F         bit 0..2 = NUSIZ1, bit 3 = REFP1, 4..7 = fine move
+    var State1Lst       @ 0x9A: [u8; NUM_BLOCKS];
+    var State1LstEnd    @ &State1Lst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    //.. $A5         ids for object
+    var Shape1IdLst     @ 0xA0: [u8; NUM_BLOCKS];
+    var Shape1IdLstEnd  @ &Shape1IdLst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    // ..$AB         low pointer for PF1 data
+    var PF1Lst          @ 0xA6: [u8; NUM_BLOCKS];
+    var PF1LstEnd       @ &PF1Lst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    // ..$B1         low pointer for PF2 data
+    var PF2Lst          @ 0xAC: [u8; NUM_BLOCKS];
+    var PF2LstEnd       @ &PF2Lst[NUM_BLOCKS - 1]: u8;
+    //---------------------------------------
+    // end of block variables
+
+    //---------------------------------------
+    // end of block variables
+    // y-position of player missile
+    var missileY     @ 0xb2: u8;
+    // x-position of player jet
+    var playerX      @ 0xb3: u8;
+    // x-speed of player jet
+    var speedX       @ 0xb4: u8;
+    // y-speed of play jet
+    var speedY       @ 0xb5: u8;
+    // 1/2 (used for bridge)
+    var blockPart    @ 0xb6: u8;
+    // high value of fuel (displayed)
+    var fuelHi       @ 0xb7: u8;
+    // low value of fuel
+    var fuelLo       @ 0xb8: u8;
+    // number of block in current section (16..1)
+    var sectionBlock @ 0xb9: u8;
+    // pointer to the shape for the player jet
+    // u16 ..$BB
+    var shapePtr0    @ 0xba: *u8;
+    // playfield pattern Id for the new generated block
+    var PF1PatId     @ 0xbc: u8;
+    //---------------------------------------
+
+    var playerState  @ 0xbd: u8;
+    var level        @ 0xbd: u8;
+    var randomLoSave @ 0xbe: u8;
+    var randomHiSave @ 0xbf: u8;
+    var livesPtr     @ 0xc0: u8;
+
+    var player2State @ 0xC2: u8; //           ; ..$C5
+    // the high pointer is not saved here, because it's const
+    var livesPtr2 @ 0xc5: u8; //
+    //---------------------------------------
+    // 0 = running; -1 = game over; 1..48 = scroll into game
+    var gameMode @ 0xC6: u8;
+    // u16 ..$C8
+    var shapePtr1a @ 0xC7: *u8;
+    // u16 ..$CA
+    var shapePtr1b @ 0xC9: *u8;
+    // u16 ..$CC
+    var colorPtr @ 0xCB: *u8;
+    // 12 bytes for the score display of current player
+    // u16 ..$D8
+    var scorePtr1 @ 0xCD: u8;
+    // u16 ..$DA
+    var PF1Ptr @ 0xD9: *u8;
+    // u16 ..$DC
+    var PF2Ptr @ 0xDB: *u8;
+
+    //---------------------------------------
+    var scorePtr2   @ 0xdd: [u8; 12];          // ..$E7         12 bytes for the score display of other player
+    // the constant hi-pointers are temporary used:
+    // current block in kernel
+    var blockNum    @ 0xde: u8;
+    // flag for GRP0 (player jet) reflection
+    var reflect0    @ 0xe0: u8;
+    // index of enemy that was hit by missile
+    var hitEnemyIdx @ 0xe2: u8;
+    // jet crashed into playfield
+    var PFCrashFlag @ 0xe4: u8;
+    // ff means: missile enabled
+    var missileFlag @ 0xe6: u8;
+    //---------------------------------------
+
+    // jet collided with enemy (id)
+    var collidedEnemy   @ 0xE8: u8;
+    // current number generator values
+    var randomLo        @ 0xE9: u8;
+    var randomHi        @ 0xEA: u8;
+    // saved number generator values for current player
+    var randomLoSave2   @ 0xEB: u8;
+    var randomHiSave2   @ 0xEC: u8;
+    var temp2           @ 0xED: u8;
+    // bit 7 = 1: road in block
+    var roadBlock       @ 0xed: u8;
+    // color of river banks
+    var PFcolor         @ 0xEE: [u8; 5];
+    // define minimum width of valley in first levels (6/0)
+    var valleyWidth     @ 0xee: u8;
+    // YELLOW/BLACK
+    var playerColor     @ 0xEF: u8;
+    // GREY (const!)
+    var stateBKColor    @ 0xF0: u8;
+    // YELLOW+2 (const!)
+    var statePFColor    @ 0xF1: u8;
+    // main temporary variable
+    var temp            @ 0xF2: u8;
+    // difference between to PF pattern ids
+    var diffPF          @ 0xf2: u8;
+    // always zero!
+    var zero1           @ 0xf3: u8;
+    // 0/1
+    var player          @ 0xF4: u8;
+    // x-position of player missile
+    var missileX        @ 0xF5: u8;
+    var zero2           @ 0xF6: u8;
+
+    // Screensaver delay
+    var SS_Delay        @ 0xF7: u8;           
+    //
+    var sound0Id        @ 0xF8: u8;           
+    var sound0Cnt       @ 0xF9: u8;
+    // Bridge is exploding
+    var bridgeSound     @ 0xFA: u8;           
+    // Missile fired
+    var missileSound    @ 0xFB: u8;           
+    var temp3           @ 0xFC: u8;
+    // Current displayed line of block in kernel
+    var blockLine       @ &temp3: u8;         
+    var maxId           @ &temp3: u8;
+    var lineNum         @ 0xFD: u8; 
+}
+
+in rom {
+    #[fallthrough]
+    func start() {
+        nointerrupt = true;
+        decimal = false;
+        x = 0;
+    }
+
+    #[fallthrough]
+    func reset() {
+        // Clear RAM
+        a = 0;
+        do {
+            (0x00 as *u8)[x] = a;
+            s = x;
+            x++;
+        } while !zero;
+
+        // @TODO: setScorePtrs()
+        ((0xff0c as *u8) as func)();
+
+        a = >:&graphics.zero;
+        x = 12 - 1;
+        // @TODO: setScorePtr1()
+        ((0xff1c as *u8) as func)();
+
+        x = &colorPtr as u8 + 1 - &PF1Lst as u8;
+        // @TODO: gameInit()
+        ((0xfa8f as *u8) as func)();
+
+        a = random;
+        // @TODO: Fix Wiz bug "return label() if !zero" loses condition
+        goto mainLoop if !zero;
+
+        random++;
+        livesPtr = a;
+
+        a = <:&graphics.one;
+        // @TODO: Can this be simplified?
+        *((&scorePtr1 as u8 + 10) as *u8) = a;
+    }
+
+    func mainLoop() {
+        // offset ball
+        x = 4;
+        a = fuelHi;
+        a >>>= 3;
+        carry = false;
+
+        // Position ball for fuel display
+        a +#= 69;
+        // @TODO: setPosX()
+        ((0xfaef as *u8) as func)();
+
+        // *** Prepare everything for the main kernel: ***
+        // Set all color registers (and NUSIZ1 = 0)
+        x++;
+
+        do {
+            // @TODO: ColorTab
+            a = (0xfff7 as *u8)[x];
+            a ^= SS_XOR;
+            a &= SS_Mask;
+            PFcolor[x] = a;
+            (&vcs.control.player2)[x] = a;
+            x--;
+        } while !negative;
+
+        y = a;
+        // @TODO: Can this be simplified?
+        a = *((&scorePtr1 as u8 + 10) as *u8);
+
+        if (a != <:&graphics.two) {
+            a = vcs.io.port_b;
+            a >>>= 1;
+            if (carry) {
+                a = player;
+                if (!zero) {
+                    playerColor = y;
+                    vcs.color.player1 = y;
+                }
+            }
+        }
+
+        // Flicker background when bridge explodes:
+        a = bridgeExplode;
+        if (!zero) {
+            bridgeExplode--;
+            a >>>= 1;
+
+            if (carry) {
+                a = 0x42;
+                a &= SS_Mask;
+                vcs.color.bg = a;
+            }
+        }
+
+        temp = ++x;
+        vcs.control.player1 = x;
+        y = playerX;
+        a = reflect0;
+        vcs.reflect.player1 = a;
+
+        if (!zero) {
+            y++;
+        }
+
+        a = y;
+        // @TODO: setPosX;
+        ((0xfaef as *u8) as func)();
+
+        x++;
+        vcs.control.playfield = x;
+        vcs.vdelay.player2 = x;
+
+        // Set size, reflect and postion for top enemy object;
+        y = XPos1Lst[NUM_BLOCKS - 1];
+        a = State1Lst[NUM_BLOCKS - 1];
+        vcs.control.player2 = a;
+        vcs.reflect.player2 = a;
+
+        // @TODO: setPosX2();
+        ((0xfaf2 as *u8) as func)();
+
+        // x-position missile:
+        x++;
+        a = missileX;
+        // @TODO: setPosX();
+        ((0xfaef as *u8) as func)();
+        // @TODO: DoHMove();
+        ((0xffae as *u8) as func)();
+
+        vcs.pattern.playfield1 = y;
+
+        // Clear collsion variables:
+        hitEnemyIdx = y;
+        PFCrashFlag = y;
+        missileFlag = y;
+        collidedEnemy = y;
+
+        // Set variables for top block:
+        x = NUM_BLOCKS - 1;
+
+        // @TODO: SetPFxPtr();
+        ((0xfbd5 as *u8) as func)();
+
+        a = blockOffset;
+        if (a < 3) {
+            x--;
+        }
+
+        blockNum = x;
+
+        y = Shape1IdLst[x];
+        // @TODO: shapePtr1aTab
+        x = (0xffc8 as *u8)[y];
+        <:shapePtr1a = x;
+        // @TODO: shapePtr1bTab, Y
+        x = (0xfbbb as *u8)[y];
+        <:shapePtr1b = x;
+        // @TODO: ColorPtrTab
+        x = (0xff23 as *u8)[y];
+        <:colorPtr = x;
+        vcs.collision.clear = a;
+        vcs.hmove.clear = a;
+
+        // Clear all collison registers
+        x = a;
+        carry = true;
+        a -#= 1;
+        a &= 0x1f;
+        blockLine = a;
+        blockLine >>>= 1;
+
+        goto lowOffset if (a < 26);
+
+        a -#= 22;
+        goto endOffset if (!zero);
+
+        lowOffset:
+            goto endOffset if (a < 4);
+            a &= 0b01;
+            a |= 0b10;
+
+        endOffset:
+
+        // Set entrypoint into kernel
+        y = a;
+        // @TODO jmpHiTab
+        a = (0xfbef as *u8)[y];
+        push(a);
+        // @TODO jmpLoTab
+        a = (0xfdf6 as *u8)[y];
+        push(a);
+
+        // Prepare graphics for first line of kernel:
+        a = x;
+        a >>>= 1;
+        y = a;
+        a = *((shapePtr1a as u16 + y as u16) as *u8);
+        if (carry) {
+            a = *((shapePtr1b as u16 + y as u16) as *u8);
+        }
+
+        if (x < 26) {
+            if (x >= 3) {
+                vcs.pattern.player2 = a;
+                a = 0;
+                vcs.pattern.player1 = a;
+            }
+        }
+
+        a = *((PF1Ptr as u16 + y as u16) as *u8);
+        vcs.pattern.playfield2 = a;
+        a = *((PF2Ptr as u16 + y as u16) as *u8);
+        vcs.pattern.playfield3 = a;
+
+        a = *((colorPtr as u16 + y as u16) as *u8);
+
+        a ^= SS_XOR;
+        a &= SS_Mask;
+
+        vcs.color.player2 = a;
+        x = blockNum;
+        a = blockLst[x];
+        roadBlock = a; // Save road-state
+
+        a &= PF_COLOR_FLAG;
+        a |= GREEN;
+
+        a ^= SS_XOR;
+        a &= SS_Mask;
+
+        PFcolor[0] = a;
+
+        bit(blockLstEnd);
+        if (negative) {
+            if (y < ROAD_HEIGHT) {
+                // @TODO: roadColorTab
+                a = *((0xffb3 as u16 + y as u16) as *u8);
+
+                a ^= SS_XOR;
+                a &= SS_Mask;
+            }
+        }
+
+        vcs.color.fg = a;
+        y = NUM_LINES;
+        lineNum = y;
+
+        do {
+            a = vcs.timer.value;
+        } while !zero;
+
+        vcs.sync.wsync = a;
+        vcs.hmove.apply = a;
+        vcs.sync.vblank = a;
+    }
+
+    /**
+     * Main display kernel 
+     */
+    func displayKernel() {
+        // First some external code to save cycles in the kernel
+        lineNum++;
+        y = blockLine;
+
+        // @TODO enterKernel2
+        goto ((0xf189 as *u8) as func) if !negative;
+
+        // .skipJet0:
+        x = zero2;
+        // @TODO contJet0
+        goto ((0xf15d as *u8) as func) if zero;
+
+        // .noRoad
+        a = PFcolor[0];
+        // @TODO contPFColor
+        goto ((0xf168 as *u8) as func);
+
+        // .doJet0a:
+        a = *((shapePtr0 as u16 + y as u16) as *u8);
+        x = a;
+        a = 0;
+
+        // .loopKernel1:
+        // this jump is taken when comming from .doJet0a
+        // @TODO: contJet0a
+        goto ((0xf1a1 as *u8) as func) if zero;
+        // this jump is taken when comming from .loopkernel1
+        // @TODO: contKernel1
+        goto ((0xf155 as *u8) as func) if !zero;
+
+        // jmpPoint3:
+        // @TODO: wait12
+        ((0xfdf5 as *u8) as func)();
+
+        contKernel1:
+            nop();
+        
+        //--------------------------------------
+        // even line:
+        // - ...
+        // - draw player jet
+        // - load new P1 shape
+
+        // *** Here starts the main kernel loop:
+        loopKernel:
+        if (y < JET_Y) {
+            a = *((shapePtr0 as u16 + y as u16) as *u8);
+            x = a;
+        }
+    }
+}
+
+in rom @ 0xfb00 {
+    namespace graphics {
+        const zero: [u8] = [
+            0x3C, // |  XXXX  |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x3C, // |  XXXX  |
+        ];
+
+        const one: [u8] = [
+            0x3C, // |  XXXX  |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x38, // |  XXX   |
+            0x18, // |   XX   |
+        ];
+
+        const two: [u8] = [
+            0x7E, // | XXXXXX |
+            0x60, // | XX     |
+            0x60, // | XX     |
+            0x3C, // |  XXXX  |
+            0x06, // |     XX |
+            0x06, // |     XX |
+            0x46, // | X   XX |
+            0x3C, // |  XXXX  |
+        ];
+
+        const three: [u8] = [
+            0x3C, // |  XXXX  |
+            0x46, // | X   XX |
+            0x06, // |     XX |
+            0x0C, // |    XX  |
+            0x0C, // |    XX  |
+            0x06, // |     XX |
+            0x46, // | X   XX |
+            0x3C, // |  XXXX  |
+        ];
+
+        const four: [u8] = [
+            0x0C, // |    XX  |
+            0x0C, // |    XX  |
+            0x0C, // |    XX  |
+            0x7E, // | XXXXXX |
+            0x4C, // | X  XX  |
+            0x2C, // |  X XX  |
+            0x1C, // |   XXX  |
+            0x0C, // |    XX  |
+        ];
+
+        const five: [u8] = [
+            0x7C, // | XXXXX  |
+            0x46, // | X   XX |
+            0x06, // |     XX |
+            0x06, // |     XX |
+            0x7C, // | XXXXX  |
+            0x60, // | XX     |
+            0x60, // | XX     |
+            0x7E, // | XXXXXX |
+        ];
+
+        const six: [u8] = [
+            0x3C, // |  XXXX  |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x7C, // | XXXXX  |
+            0x60, // | XX     |
+            0x62, // | XX   X |
+            0x3C, // |  XXXX  |
+        ];
+
+        const seven: [u8] = [
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x18, // |   XX   |
+            0x0C, // |    XX  |
+            0x06, // |     XX |
+            0x42, // | X    X |
+            0x7E, // | XXXXXX |
+        ];
+
+        const eight: [u8] = [
+            0x3C, // |  XXXX  |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x3C, // |  XXXX  |
+            0x3C, // |  XXXX  |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x3C, // |  XXXX  |
+        ];
+
+        const nine: [u8] = [
+            0x3C, // |  XXXX  |
+            0x46, // | X   XX |
+            0x06, // |     XX |
+            0x3E, // |  XXXXX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x66, // | XX  XX |
+            0x3C, // |  XXXX  |
+        ];
+    }
+}

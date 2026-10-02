@@ -1,0 +1,17 @@
+{
+  "_about": "5-frame deterministic capture SHA-256 baseline. Pinned 2026-07-15. Any drift between a fresh capture run and these hashes indicates a non-determinism regression in port/rendering (time.time()-used-as-seed, unseeded random, etc). Regenerate via: python port/capture_after_seq.py && python -m pytest tests/test_sanity_deterministic_frames.py::test_sanity_across_deterministic_frames (the determinism test will tell you the new SHAs; if you accept them, overwrite this JSON with the printed ones and commit).",
+  "_meta": {
+    "version": 1,
+    "capture_script": "port/capture_after_seq.py",
+    "capture_pinned_date": "2026-07-15",
+    "frame_count": 5,
+    "tolerance": "exact byte equality (PNG encoding is deterministic for the same pixel buffer)"
+  },
+  "shas": {
+    "0":   "96fa51c9f2aebefb9cf3a8c5638431f89371b52ee3055ac52ea139b1c1bcbdcb",
+    "60":  "c52ba9a082386477d594e8b01c478fb20fb41ce76412bae763e65e1c35bd052e",
+    "120": "39a39688106e8f0cb0595988bf5e48c75a945c4e29d5507538d57584910a1dc2",
+    "180": "8c784c2ccf99af4d469cadee3cfed8a919e8e82ccf01085ec2f9b1fe22cfd531",
+    "240": "82c7e99efb1e8efa5eaa3a21b10a1309e3b1d1cb3e445f0b5fbd02e11edb75f9"
+  }
+}

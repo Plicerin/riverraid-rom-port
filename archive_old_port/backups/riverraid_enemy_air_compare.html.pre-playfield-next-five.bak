@@ -1,0 +1,301 @@
+<!doctype html><html><head><meta charset="utf-8"><title>River Raid enemy air compare</title><style>body{background:#111;color:#ddd;font-family:monospace;padding:16px}pre{background:#151515;padding:8px;white-space:pre-wrap}.card{border:1px solid #444;background:#1a1a1a;padding:10px;margin:12px 0}</style></head><body><h1>River Raid enemy air sprite comparison</h1><div class="card"><h2>Plane</h2><h3>PlaneA — CPU $F388 ROM 0x0388</h3><pre>········
+········
+········
+········
+········
+··██····
+·█··████
+██···██·
+········</pre><h3>PlaneB — CPU $F3A9 ROM 0x03A9</h3><pre>········
+········
+········
+········
+········
+··███···
+████████
+█·······</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+········
+··AA····
+·ABB█AAA
+██BBB██B
+B·······</pre></div><div class="card"><h2>Heli0</h2><h3>Heli0A — CPU $F399 ROM 0x0399</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+·····███</pre><h3>Heli0B — CPU $F3BA ROM 0x03BA</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+···███··</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···BB█AA</pre></div><div class="card"><h2>Heli1</h2><h3>Heli1A — CPU $F3B1 ROM 0x03B1</h3><pre>········
+········
+········
+········
+·····█··
+████████
+█··█████
+·····█··
+···███··</pre><h3>Heli1B — CPU $F391 ROM 0x0391</h3><pre>········
+········
+········
+····███·
+█···███·
+████████
+····███·
+·····███</pre><h3>Combined OR</h3><pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre><h3>Overlay</h3><pre>········
+········
+········
+········
+····B█B·
+█AAA███A
+█BB█████
+····B█B·
+···AA█BB</pre></div>
+<section id="screenshot-matched-objects">
+<div class="card">
+<h2>Screenshot-matched objects</h2>
+<p>This section pulls the three objects matched directly to the provided screenshot: center player jet, upper-right enemy plane, and top-left helicopter.</p>
+</div>
+<div class="card">
+<h2>Player jet (center yellow craft)</h2>
+<h3>JetStraight — CPU $F1A2 ROM 0x01A2</h3>
+<pre>········
+········
+········
+········
+········
+··█·█·█·
+··█████·
+···███··
+····█···
+·█··█··█
+·██·█·██
+·███████
+·███████
+··█████·
+···███··
+····█···
+····█···
+····█···</pre>
+<p>Bytes: 00 00 00 00 00 2A 3E 1C 08 49 6B 7F 7F 3E 1C 08 08 08</p>
+</div>
+<div class="card">
+<h2>Enemy plane (upper-right small blue craft)</h2>
+<h3>Combined plane silhouette</h3>
+<pre>········
+········
+········
+········
+········
+··██····
+·███████
+████████
+█·······</pre>
+<p>PlaneA — CPU $F388 ROM 0x0388 — bytes: 00 00 00 00 00 30 4F C6 00</p>
+<p>PlaneB — CPU $F3A9 ROM 0x03A9 — bytes: 00 00 00 00 00 38 FF 80</p>
+</div>
+<div class="card">
+<h2>Helicopter (top-left airborne object)</h2>
+<h3>Combined helicopter silhouette</h3>
+<pre>········
+········
+········
+········
+····███·
+████████
+████████
+····███·
+···█████</pre>
+<p>Best grounded match is the helicopter family; screenshot resolution is too low to separate Heli0 vs Heli1 by the tiny bottom-row difference.</p>
+<p>Heli0A — CPU $F399 ROM 0x0399 — bytes: 00 00 00 00 04 FF 9F 04 07</p>
+<p>Heli0B — CPU $F3BA ROM 0x03BA — bytes: 00 00 00 0E 8E FF 0E 1C</p>
+<p>Heli1A — CPU $F3B1 ROM 0x03B1 — bytes: 00 00 00 00 04 FF 9F 04 1C</p>
+<p>Heli1B — CPU $F391 ROM 0x0391 — bytes: 00 00 00 0E 8E FF 0E 07</p>
+</div>
+</section><!-- /screenshot-matched-objects -->
+<section id="five-more-visible-objects"><div class='card'><h2>Ship</h2><p>ShipA — CPU $F3A2 ROM 0x03A2</p><pre>········
+········
+········
+·█████··
+███████·
+·████···
+···█····</pre><p>ShipB — CPU $F381 ROM 0x0381</p><pre>········
+········
+········
+██████··
+████████
+··██····
+···█····</pre><h3>Combined OR silhouette</h3><pre>········
+········
+········
+██████··
+████████
+·████···
+···█····</pre><p>A bytes: 00 00 00 7C FE 78 10</p><p>B bytes: 00 00 00 FC FF 30 10</p></div><div class='card'><h2>Bridge</h2><p>BridgeA — CPU $F375 ROM 0x0375</p><pre>·█····█·</pre><p>BridgeB — CPU $F376 ROM 0x0376</p><pre>████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+·█····█·</pre><h3>Combined OR silhouette</h3><pre>████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+████████
+·█····█·</pre><p>A bytes: 42</p><p>B bytes: FF FF FF FF FF FF FF FF FF FF 42</p></div><div class='card'><h2>FuelTank</h2><p>FuelA — CPU $F35E ROM 0x035E</p><pre>███████·
+██·████·
+██·████·
+███████·
+██·████·
+██·████·
+███████·
+██·█·██·
+██·█·██·
+██·████·
+██··███·</pre><p>FuelB — CPU $F369 ROM 0x0369</p><pre>██···██·
+██·████·
+██·████·
+██···██·
+██··███·
+██···██·
+██···██·
+██·█·██·
+███████·
+██·████·
+██·████·
+·█████··</pre><h3>Combined OR silhouette</h3><pre>███████·
+██·████·
+██·████·
+███████·
+██·████·
+██·████·
+███████·
+██·█·██·
+███████·
+██·████·
+██·████·
+·█████··</pre><p>A bytes: FE DE DE FE DE DE FE D6 D6 DE CE</p><p>B bytes: C6 DE DE C6 CE C6 C6 D6 FE DE DE 7C</p></div><div class='card'><h2>Score HUD (904720)</h2><pre>··████·····████·······██······██·····██████····████··
+·█···██···██··██······██······██·····██·······██··██·
+·····██···██··██······██······██·····██·······██··██·
+··█████···██··██···██████·····██······████····██··██·
+·██··██···██··██···█··██·······██········██···██··██·
+·██··██···██··██····█·██········██·······██···██··██·
+·██··██···██··██·····███····█····█···█···██···██··██·
+··████·····████·······██····██████····████·····████··</pre><p>Digits used: Nine, Zero, Four, Seven, Two, Zero</p></div><div class='card'><h2>Fuel HUD kernel tables</h2><pre>·███████ ████████ ······· ████████ ████████ ████████
+·█······ ········ ······· ········ ········ ·······█
+·█··████ ········ ······· ······██ █······· █······█
+·█··█··· ········ ······· ██····█· ········ █······█
+·█··█··· ········ ······· ·██···██ █······· █······█
+·█··███· ········ ······· ··██···· █······· ███····█
+·█··█··· ········ ······· ···██·██ █······· █······█
+·█··█··· ········ ······· ███·██·· ········ █······█
+·█··████ ········ ······· ·█···██· ········ ████···█
+·█······ ········ ······· ·█····██ ········ ·······█
+·█······ ········ ······· ██·····█ █······· ·······█
+·█··██·· ········ ······· ·█··█··· ········ ···██··█
+·█··██·· ········ ······· ····█··· ········ ···██··█
+·█··██·· ········ ······· ····█··· ········ ···██··█
+·███████ ········ ······· ········ ········ ████████</pre><p>Conservative schematic: FuelTab0..4 shown as 8-bit cells, with ENABLTab shown as a centered marker column. This is table-faithful, not a pixel-perfect x-position reconstruction of the HUD kernel.</p><p>FuelTab0..4/ENABLTab addresses: FuelTab0=$F300 (0x0300), FuelTab1=$F30F (0x030F), FuelTab2=$F31D (0x031D), FuelTab3=$F32B (0x032B), FuelTab4=$F339 (0x0339), ENABLTab=$F348 (0x0348)</p></div></section><!-- /five-more-visible-objects --><section id="next-five-visible-objects"><div class='card'><h2>Extra-life jet icon</h2><p>JetStraight — CPU $FCA2 ROM 0x0CA2</p><pre>········
+········
+········
+········
+········
+··█·█·█·
+··█████·
+···███··
+····█···
+·█··█··█
+·██·█·██
+·███████
+·███████
+··█████·
+···███··
+····█···
+····█···
+····█···</pre><p>Bytes: 00 00 00 00 00 2A 3E 1C 08 49 6B 7F 7F 3E 1C 08 08 08</p><p>Used here as the visible extra-life jet icon in the HUD; same base jet glyph family as the player craft.</p></div><div class='card'><h2>Lives digit (likely 2)</h2><p>Two — CPU $FB10 ROM 0x0B10</p><pre>·██████·
+·██·····
+·██·····
+··████··
+·····██·
+·····██·
+·█···██·
+··████··</pre><p>Bytes: 7E 60 60 3C 06 06 46 3C</p><p>Most likely visible lives digit from the HUD crop is 2 (low-to-moderate confidence because the crop is tiny).</p></div><div class='card'><h2>Copyright / Activision strip</h2><pre>········ ········ █·█·██·█ ·█·█···· █·███·█· ███·█··█
+········ ········ █·█·█··█ ·█·██··· █···█·█· █·█·█·██
+········ ········ ███·█··█ ·█·███·· █·███·█· █·█·████
+········ ········ █·█·█··█ ·█·█·██· █·█···█· █·█·██·█
+········ ········ ███·██·█ ·█·█··██ ··███·█· ███·█··█
+········ ········ ·█·····█ ···█···█ █······· ········
+········ ········ ····████ ████···· ███████· ········
+········ ········ ········ ········ ········ ········
+········ ·█···███ ······██ █······· ········ ········
+████·███ ·█·····█ ········ █······· ········ ········
+█··█·█·█ ·███·███ ·█··█·██ █·█·█·█· ···█···█ ·███·███
+█····███ ·█·█·█·█ ·█··█·█· █·█·█·█· ···█···█ ·█·█·█··
+█······· ·███·█·█ ·██·█·██ █·███·█· ···█·███ ·███·███
+█··█···· ········ ········ ··█···█· ···█·█·█ ·█·█···█
+████···· ········ ····█··· ··█··███ ···█·███ ·███·███
+········ ········ ········ ······█· ········ ········</pre><p>Composite of Copyright0..5, which drives the bottom copyright / Activision strip.</p><p>Copyright0=$FB59 (0x0B59), Copyright1=$FB68 (0x0B68), Copyright2=$FB78 (0x0B78), Copyright3=$FB88 (0x0B88), Copyright4=$FB98 (0x0B98), Copyright5=$FBA8 (0x0BA8)</p></div><div class='card'><h2>Score digit 9</h2><p>Nine — CPU $FB48 ROM 0x0B48</p><pre>··████··
+·█···██·
+·····██·
+··█████·
+·██··██·
+·██··██·
+·██··██·
+··████··</pre><p>Bytes: 3C 46 06 3E 66 66 66 3C</p><p>Leading score digit in visible score 904720.</p></div><div class='card'><h2>Score digit 4</h2><p>Four — CPU $FB20 ROM 0x0B20</p><pre>····██··
+····██··
+····██··
+·██████·
+·█··██··
+··█·██··
+···███··
+····██··</pre><p>Bytes: 0C 0C 0C 7E 4C 2C 1C 0C</p><p>Third score digit in visible score 904720.</p></div></section><!-- /next-five-visible-objects --></body></html>
