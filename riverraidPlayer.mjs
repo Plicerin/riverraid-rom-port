@@ -138,7 +138,12 @@ export function mountPlayer(root) {
   // touch controls: hold to press
   root.querySelectorAll('[data-hold]').forEach((button) => {
     const control = button.dataset.hold;
-    const down = (event) => { event.preventDefault(); button.setPointerCapture?.(event.pointerId); held.add(control); if (!started) play(); };
+    const down = (event) => {
+      event.preventDefault();
+      held.add(control);
+      if (!started) play();
+      try { button.setPointerCapture(event.pointerId); } catch { /* finger already lifted: the press still counts */ }
+    };
     const up = () => held.delete(control);
     button.addEventListener('pointerdown', down);
     button.addEventListener('pointerup', up);
