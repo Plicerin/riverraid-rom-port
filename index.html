@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06081a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="River Raid">
+  <link rel="apple-touch-icon" href="img/icon-180.png">
   <title>River Raid — Activision, 1982</title>
   <meta name="description" content="A browser port of Carol Shaw's River Raid for the Atari 2600, rebuilt from the original ROM instruction by instruction and checked against the real cartridge frame by frame.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232d32b8'/%3E%3Crect width='4' height='16' fill='%236e9c42'/%3E%3Crect x='12' width='4' height='16' fill='%236e9c42'/%3E%3Cpath d='M8 4l1 3 3 2v1H9l-.5 2H10v1H6v-1h1.5L7 10H4V9l3-2z' fill='%23e8e84a'/%3E%3C/svg%3E">
@@ -76,8 +83,39 @@
       background: linear-gradient(180deg, #151a45 0%, #090b22 100%);
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
-    .canvas-shell:fullscreen { width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .canvas-shell:fullscreen .tv { width: min(100%, calc((100vh - 80px) * 640 / 398)); }
+    /* Full screen: the game and its touch controls fill the screen. Uses the
+       browser's fullscreen where allowed; iPhone Safari only lets video go
+       fullscreen, so there the page does it with fixed positioning. */
+    .fs-exit { display: none; }
+    body.fs { overflow: hidden; }
+    body.fs main > :not(#play):not(#tc) { display: none; }
+    body.fs #play {
+      position: fixed; inset: 0; z-index: 10; width: auto; margin: 0; border: 0; border-radius: 0; box-shadow: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left));
+      background: var(--lp-night);
+    }
+    body.fs .tv { width: min(100%, calc((100dvh - 60px) * 640 / 398)); }
+    body.fs .fs-exit {
+      display: block; position: absolute; z-index: 12; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+      font: 11px ui-monospace, "Cascadia Mono", monospace; padding: 6px 11px; border-radius: 8px;
+      border: 1px solid var(--lp-line-2); background: rgba(10, 12, 36, 0.85); color: var(--lp-ink); cursor: pointer;
+    }
+    body.fs #tc {
+      position: fixed; z-index: 11; left: 0; right: 0; bottom: 0; width: auto; margin: 0;
+      padding: 12px max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    }
+    @media (pointer: coarse) and (orientation: portrait) {
+      body.fs .tv { width: min(100%, calc((100dvh - 260px) * 640 / 398)); }
+    }
+    @media (pointer: coarse) and (orientation: landscape) {
+      body.fs .tv { width: min(calc(100% - 250px), calc((100dvh - 30px) * 640 / 398)); }
+      body.fs #status-line { display: none; }
+      body.fs #tc { pointer-events: none; }
+      body.fs #tc button { pointer-events: auto; opacity: 0.8; }
+      body.fs .dpad { grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(3, 40px); }
+      body.fs .fire { width: 76px; height: 76px; }
+    }
     .tv { position: relative; }
     .tv canvas, .poster img {
       display: block; width: 100%; height: auto; aspect-ratio: 640 / 398;
@@ -196,6 +234,7 @@
       </div>
     </div>
     <div id="status-line" data-hint aria-live="polite">Press Play, then push up or fire to take off</div>
+    <button type="button" class="fs-exit" data-exit>Exit full screen</button>
   </div>
   <div id="tc" aria-label="Touch controls">
     <div class="dpad">
@@ -335,11 +374,29 @@
   const shell = document.getElementById('play');
   const boot = () => mountPlayer(shell.parentElement);
   window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot();
-  document.getElementById('lp-fullscreen').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else shell.requestFullscreen?.().catch(() => {});
+  // full screen: the browser's own where allowed (desktop, Android, iPad), and
+  // the same layout without it on iPhone, where only video may go fullscreen
+  const root = document.documentElement;
+  const nativeElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const canNative = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  const setFull = (on) => {
+    document.body.classList.toggle('fs', on);
     shell.querySelector('canvas').focus({ preventScroll: true });
-  });
+  };
+  const enter = () => {
+    setFull(true);
+    if (canNative) (root.requestFullscreen || root.webkitRequestFullscreen)?.call(root)?.catch?.(() => {});
+  };
+  const leave = () => {
+    if (nativeElement()) (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    setFull(false);
+  };
+  document.getElementById('lp-fullscreen').addEventListener('click', () => (document.body.classList.contains('fs') ? leave() : enter()));
+  shell.querySelector('[data-exit]').addEventListener('click', leave);
+  for (const event of ['fullscreenchange', 'webkitfullscreenchange']) {
+    document.addEventListener(event, () => { if (!nativeElement()) setFull(false); });
+  }
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.body.classList.contains('fs') && !nativeElement()) leave(); });
 </script>
 </body>
 </html>

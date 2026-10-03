@@ -17,6 +17,10 @@ Open:
 - Tribute page (source of the claude.ai artifact): http://127.0.0.1:8080/tribute.html
 - Inspector: http://127.0.0.1:8080/inspector.html (still uses the older `riverraidVisiblePort.mjs` model)
 
+## Phones
+
+Touch controls (D-pad and Fire) appear on touch screens. Full screen keeps the game and its controls on screen: it uses the browser's fullscreen where it is allowed (desktop, Android, iPad) and the same layout without it on iPhone, where Safari only lets video go fullscreen. On iPhone, Share → Add to Home Screen installs it as a web app (`manifest.webmanifest`, `img/icon-*.png`) that opens without the browser bar.
+
 ## How the port works
 
 Game state is the ROM's zero page: a 256-byte array where every variable lives at its ROM address.
