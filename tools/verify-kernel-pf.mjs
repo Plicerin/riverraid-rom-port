@@ -6,7 +6,7 @@ import { registerAt, playfieldLine } from './atari/tia-lines.mjs';
 import { kernelPlayfieldLines, playfieldPixels, kernelBackgroundColor } from '../riverraidRiver.mjs';
 
 const frames = Number(process.argv[2] ?? 20000), seed = Number(process.argv[3] ?? 5), every = Number(process.argv[4] ?? 3);
-const FIRST = 40;
+const FIRST = 39; // the kernel's first line after VSYNC
 let zp = null, n = 0, checked = 0, bad = 0;
 const onCpu = (cpu, vcs) => { if (cpu.pc === 0xf027) zp = vcs.zeroPage(); };
 for (const vcs of longRun({ frames, seed, onCpu })) {

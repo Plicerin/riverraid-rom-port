@@ -13,7 +13,7 @@ const jetTableAt = (lo) => Array.from({ length: 18 }, (_, i) => rom[(0xc00 | ((l
 for (const vcs of longRun({ frames, seed, onCpu })) {
   n += 1;
   if (n < 30 || n % every) continue;
-  const emu = objectLines(vcs.lastFrameWrites, 40, 160);
+  const emu = objectLines(vcs.lastFrameWrites, 39, 160);
   const model = kernelObjectLines(zp, KERNEL_SHAPE_BYTES, jetTableAt(zp[0xba]));
   checked += 1;
   const problems = [];

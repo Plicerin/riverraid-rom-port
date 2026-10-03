@@ -6,7 +6,7 @@ import { CYCLES_PER_LINE, TIA } from './vcs.mjs';
 import { registerAt, objectLines } from './tia-lines.mjs';
 import { playerPixels, objectX } from '../../riverraidRiver.mjs';
 
-const FIRST = 40, LINES = 160;
+const FIRST = 39, LINES = 160;
 const pixelTime = (cycleInFrame) => {
   const line = Math.floor(cycleInFrame / CYCLES_PER_LINE) - FIRST;
   return line * 160 + 3 * (cycleInFrame % CYCLES_PER_LINE) - 68;

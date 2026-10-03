@@ -43,12 +43,16 @@ export class VCS {
     this.cpu.reset();
   }
 
+  // RIOT timer as Stella models it: the written value is decremented on the
+  // cycle after the write and then once per interval; after it passes 0 it
+  // wraps to $FF and counts down once per cycle. cycles is the CPU count after
+  // the reading instruction, whose read is on its last cycle.
   intim(cycles) {
-    const elapsed = cycles - this.timer.setAt;
-    const ticks = Math.floor(elapsed / this.timer.interval);
-    if (ticks <= this.timer.value) return (this.timer.value - ticks) & 0xff;
-    // after underflow the timer decrements once per cycle
-    return (0xff - (elapsed - (this.timer.value + 1) * this.timer.interval)) & 0xff;
+    const { value, interval, setAt } = this.timer;
+    const d = cycles - 1 - setAt;
+    const ticks = Math.floor((d + interval - 1) / interval);
+    if (ticks <= value) return value - ticks;
+    return (0xff - (d - (value * interval + 1))) & 0xff;
   }
 
   read(addr) {

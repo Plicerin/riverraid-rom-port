@@ -1,7 +1,7 @@
 import { longRun } from './longrun.mjs';
 import { TIA } from './vcs.mjs';
 import { registerAt } from './tia-lines.mjs';
-const FIRST = 40;
+const FIRST = 39; // the kernel's first line after VSYNC
 const want = new Set(process.argv.slice(2).map(Number));
 let n = 0, zp = null;
 const onCpu = (cpu, vcs) => { if (cpu.pc === 0xf027) zp = vcs.zeroPage(); };

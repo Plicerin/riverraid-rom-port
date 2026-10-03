@@ -7,7 +7,7 @@ import { statusLines, statusLinePixels } from '../riverraidStatus.mjs';
 import { preKernel, kernel, statusTail } from '../riverraidFrame.mjs';
 
 const frames = Number(process.argv[2] ?? 3000), seed = Number(process.argv[3] ?? 3), every = Number(process.argv[4] ?? 7);
-const FIRST = 40 + 161; // the line after the kernel's last line
+const FIRST = 39 + 161; // the line after the kernel's last line
 const ORACLE_SHIFT = 6;
 let zp = null, n = 0, checked = 0, bad = 0;
 const onCpu = (cpu, v) => { if (cpu.pc === 0xf027) zp = v.zeroPage(); };

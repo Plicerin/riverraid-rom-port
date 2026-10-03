@@ -56,7 +56,7 @@ const onCpu = (cpu, vcs) => {
   prev = zp; io = fresh(); vsyncSeen = false; audioWrites = {};
   if (process.env.DEBUG_FRAME && n + 1 === Number(process.env.DEBUG_FRAME)) {
     console.log('state before frame', n + 1, JSON.stringify({ gameMode: zp[0xc6], blockOffset: zp[0x8b], playerX: zp[0xb3], reflect0: zp[0xe0], missileX: zp[0xf5], missileY: zp[0xb2], shapePtr0: zp[0xba].toString(16), blk: [...zp.subarray(0x8e, 0x94)].map((b) => b.toString(16)) }));
-    vcs.onCollisionRead = (reg, c) => console.log('  rom read', reg, 'line', Math.floor(c / 76) - 40, 'cyc', c % 76, 'x', vcs.cpu.x, 'val', vcs.collisions(reg, c).toString(16));
+    vcs.onCollisionRead = (reg, c) => console.log('  rom read', reg, 'line', Math.floor(c / 76) - 39, 'cyc', c % 76, 'x', vcs.cpu.x, 'val', vcs.collisions(reg, c).toString(16));
   } else if (process.env.DEBUG_FRAME) vcs.onCollisionRead = null;
 };
 for (const _ of longRun({ frames, seed, onCpu, collisions: true, keepFuel: false, autoRestart: true })) n += 1;
