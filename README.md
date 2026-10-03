@@ -57,7 +57,7 @@ Needs the ROM at `reference/river-raid-wiz-main/baserom.a26` (MD5 `393948436d1f4
 - `verify-frame`: whole frames, with crashes, refuels, hits, game overs and restarts, including the sound register writes
 - `verify-status`: the status display against a pixel render of the ROM's TIA writes (`tools/atari/tia-render.mjs`)
 
-The whole picture, playfield and status display, matches a Stella snapshot pixel for pixel. The oracle's own TIA renderer places status-area objects 6 pixels left of Stella, so `verify-status` compares content with that offset and absolute positions come from Stella.
+The whole picture, playfield and status display, matches a Stella snapshot pixel for pixel, and `verify-status` compares the status display with the oracle's render at the same positions. (The oracle used to count frame cycles from the VSYNC write, two cycles into its scanline, which put its objects 6 pixels left of Stella; it now counts from the start of that line, and its RIOT timer decrements on the cycle after it is written, as in Stella.)
 
 ## Known gaps
 

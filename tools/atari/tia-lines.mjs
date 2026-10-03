@@ -31,7 +31,8 @@ export function playfieldLine(writes, line, regsBefore = {}) {
 // Displayed object graphics per kernel line, sampled just after HBLANK:
 // GRP0 (VDELP0 off in the main kernel), GRP1 through VDELP1 (the "old" copy is
 // latched on every GRP0 write), ENAM0, COLUP1, NUSIZ1, REFP0/REFP1.
-export function objectLines(writes, firstLine, count, sampleCycle = 23) {
+// (cycle 25 of the scanline; frame cycles count from the start of the VSYNC line)
+export function objectLines(writes, firstLine, count, sampleCycle = 25) {
   const out = [];
   let i = 0;
   const st = { GRP0: 0, newGRP1: 0, oldGRP1: 0, ENAM0: 0, COLUP1: 0, NUSIZ1: 0, REFP0: 0, REFP1: 0 };

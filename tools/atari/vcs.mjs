@@ -98,7 +98,7 @@ export class VCS {
       this.lastFrameWrites = this.writes;
       this.writes = [];
       this.frame += 1;
-      this.frameStart = cycles;
+      this.frameStart = cycles - (cycles % CYCLES_PER_LINE); // the beam keeps its place in the line
       if (this.onFrame) this.onFrame(this);
     }
   }

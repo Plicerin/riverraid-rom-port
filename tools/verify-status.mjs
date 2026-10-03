@@ -8,7 +8,6 @@ import { preKernel, kernel, statusTail } from '../riverraidFrame.mjs';
 
 const frames = Number(process.argv[2] ?? 3000), seed = Number(process.argv[3] ?? 3), every = Number(process.argv[4] ?? 7);
 const FIRST = 39 + 161; // the line after the kernel's last line
-const ORACLE_SHIFT = 6;
 let zp = null, n = 0, checked = 0, bad = 0;
 const onCpu = (cpu, v) => { if (cpu.pc === 0xf027) zp = v.zeroPage(); };
 for (const vcs of longRun({ frames, seed, onCpu, collisions: true, keepFuel: false, autoRestart: true })) {
@@ -25,8 +24,8 @@ for (const vcs of longRun({ frames, seed, onCpu, collisions: true, keepFuel: fal
   const problems = [];
   model.forEach((line, i) => {
     const px = statusLinePixels(line);
-    // the oracle renderer places status-area objects 6 pixels left of Stella; positions are checked against Stella separately
-    const x = px.findIndex((c, k) => k >= 16 && k < 154 && (c & 0xfe) !== (rom[i][k - ORACLE_SHIFT] & 0xfe));
+    // pixel for pixel, at the same positions (Stella-aligned since frames count from the VSYNC line's start)
+    const x = px.findIndex((c, k) => k >= 16 && k < 154 && (c & 0xfe) !== (rom[i][k] & 0xfe));
     if (x >= 0 && problems.length < 3) problems.push(`status line ${i} x ${x}: rom ${rom[i][x].toString(16)} js ${px[x].toString(16)}`);
   });
   if (problems.length) { bad += 1; if (bad <= 6) console.log(`frame ${n} gameMode ${zp[0xc6]} fuelHi ${zp[0xb7]}:`, problems.join('; ')); }
